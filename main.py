@@ -1,6 +1,6 @@
 import os
 import random
-import psycopg2
+#import psycopg2
 
 import discord
 from discord.ext import commands
