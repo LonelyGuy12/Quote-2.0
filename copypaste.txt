@@ -1,0 +1,43 @@
+try:
+    conn = psycopg2.connect(user = "ubugdtjhfqpdjz",
+    password = "d0db251334960613cbba2cd46fea6d9b622078ad355a48236d6e190e4d63b1bc",
+    host = "ec2-176-34-105-15.eu-west-1.compute.amazonaws.com",
+    port = "5432",
+    database = "d6hv8ckmmqkspq")
+
+    cur = conn.cursor()
+    print("Connected to database.")
+
+    currency = '''CREATE TABLE Currency
+    (ID TEXT NOT NULL,
+    Quotes REAL NOT NULL)
+    '''
+
+    cur.execute(currency)
+    conn.commit()
+    print("Table created successfully in PostgreSQL!")
+
+except (Exception, Error) as error:
+    print("Error while connecting to PostgreSQL", error)
+
+@bot.command(name = 'register')
+async def register(ctx):
+    userID = ctx.author.id
+    if str(userID) not in cur.execute("""SELECT * from Currency"""):
+        cur.execute("""INSERT INTO Currency (ID, Quotes) VALUES ({}, {})""".format(userID, 10))
+        print("Your account has been registered!")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    else:
+        print("You already have an account!")
+
+
+@bot.command(name = 'balance')
+async def balance(ctx):
+    userID = ctx.author.id
+    if str(userID) in cur.fetchall():
+        print("Your balance is {}".format(cur.execute("""SELECT Quotes FROM Currency WHERE ID={}""".format(userID))))
+    else:
+        print("You don't have an account. Register using `$register`.")
