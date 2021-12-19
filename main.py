@@ -1,8 +1,8 @@
 import os
 import random
 from discord import user
-import psycopg2
-from psycopg2 import Error
+#import psycopg2
+#from psycopg2 import Error
 
 import discord
 from discord.ext import commands
