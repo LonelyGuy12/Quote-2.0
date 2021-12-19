@@ -41,3 +41,26 @@ async def balance(ctx):
         print("Your balance is {}".format(cur.execute("""SELECT Quotes FROM Currency WHERE ID={}""".format(userID))))
     else:
         print("You don't have an account. Register using `$register`.")
+
+
+@bot.command(name = 'slap', help = 'Slaps the person whom you specify.')
+@commands.cooldown(1, 60, commands.BucketType.user)
+async def slap(ctx, user, *, reason):
+    slap_gifs = [
+        'https://tenor.com/view/nope-stupid-slap-in-the-face-phone-gif-15151334',
+        'https://tenor.com/view/baka-slap-huh-angry-gif-15696850',
+        'https://tenor.com/view/pikachu-slap-fight-mad-no-gif-16415016',
+        'https://tenor.com/view/slap-cat-gif-11314821',
+        'https://tenor.com/view/face-slap-gif-18146312',
+        'https://c.tenor.com/D8hEg0H26hAAAAAM/cat-smack.gif',
+        'https://c.tenor.com/mMGM1FfaXLgAAAAM/slap-cat.gif',
+        'https://tenor.com/view/mochicat-slap-cute-adorable-gif-15575210',
+
+    ]
+    try:
+        await ctx.message.delete()
+    except Exception:
+        pass
+
+    await ctx.send('{0.author.mention} slapped {1} {2}'.format(ctx, user, reason))
+    await ctx.send(random.choice(slap_gifs))
