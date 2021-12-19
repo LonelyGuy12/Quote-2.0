@@ -6,6 +6,7 @@ from discord import user
 
 import discord
 from discord.ext import commands
+from discord.ext.commands.errors import MissingPermissions
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix = '$')
@@ -37,13 +38,24 @@ async def slap(ctx, user, *, reason):
         'https://tenor.com/view/slap-cat-gif-11314821',
         'https://tenor.com/view/face-slap-gif-18146312',
         'https://tenor.com/view/spank-slap-butt-anime-gif-17784858',
+        'https://c.tenor.com/D8hEg0H26hAAAAAM/cat-smack.gif',
+        'https://c.tenor.com/mMGM1FfaXLgAAAAM/slap-cat.gif',
+        'https://tenor.com/view/mochicat-slap-cute-adorable-gif-15575210',
 
     ]
-    #await ctx.message.delete()
+    try:
+        await ctx.message.delete()
+    except Exception:
+        pass
+
     await ctx.send('{0.author.mention} slapped {1} {2}'.format(ctx, user, reason))
     await ctx.send(random.choice(slap_gifs))
 
-
+@bot.command(name = 'quote', help = 'Sends a random message selected from the last 1000 messages!')
+async def quote(ctx):
+    messages = await ctx.history(limit = 1000).flatten()
+    msg = random.choice(messages)
+    await ctx.send(f'{msg.content} - {str(msg.author)}\n{str(msg.jump_url)}')
 
 
 bot.run(TOKEN)
