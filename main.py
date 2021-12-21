@@ -51,28 +51,28 @@ async def quote(ctx):
     await ctx.send(f'{msg.content} - {str(msg.author)}\n{str(msg.jump_url)}')
 
 @bot.command(name = 'rps', help = 'Play rock paper scissors!')
-@commands.cooldown(1, 15, commands.BucketType.user)
-async def rps(ctx, arg):
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def rps(ctx, choice):
     rps = str(random.choices(['rock', 'paper', 'scissors'], k = 1)[0])
-    if rps == arg:
+    if rps == choice:
         await ctx.send(f"{str.capitalize(rps)}. It's a tie!")
 
-    elif rps == 'rock' and arg == 'paper':
+    elif rps == 'rock' and choice == 'paper':
         await ctx.send(f"{str.capitalize(rps)}. You win!")
         
-    elif rps == 'rock' and arg == 'scissors':
+    elif rps == 'rock' and choice == 'scissors':
         await ctx.send(f"{str.capitalize(rps)}. You lose...")
 
-    elif rps == 'paper' and arg == 'scissors':
+    elif rps == 'paper' and choice == 'scissors':
         await ctx.send(f"{str.capitalize(rps)}. You win!")
          
-    elif rps == 'paper' and arg == 'rock':
+    elif rps == 'paper' and choice == 'rock':
         await ctx.send(f"{str.capitalize(rps)}. You lose...")
 
-    elif rps == 'scissors' and arg == 'rock':
+    elif rps == 'scissors' and choice == 'rock':
         await ctx.send(f"{str.capitalize(rps)}. You win!")
     
-    elif rps == 'scissors' and arg == 'paper':
+    elif rps == 'scissors' and choice == 'paper':
         await ctx.send(f"{str.capitalize(rps)}. You lose...")
         
     else:
@@ -140,6 +140,30 @@ async def randnum(ctx, num1, num2):
 async def randnum(ctx, arg):
     num = fractions.Fraction(arg * 1/180).limit_denominator()
     await ctx.send(str(num) + 'π')
+
+@bot.command(name = 'hug', help = 'Hug a person whom you specify!')
+@commands.cooldown(1, 60, commands.BucketType.user)
+async def hug(ctx, user, *, reason):
+    hug_gifs = [
+    'https://tenor.com/view/mochi-peachcat-mochi-peachcat-hug-pat-gif-19092449',
+    'https://tenor.com/view/hugs-sending-virtual-hugs-loading-gif-8158818',
+    'https://tenor.com/view/milk-and-mocha-bear-couple-line-hug-cant-breathe-gif-12687187',
+    'https://tenor.com/view/hug-love-hi-bye-cat-gif-15999080',
+    'https://tenor.com/view/ghosthug-gif-7626784',
+    'https://tenor.com/view/anime-hug-sweet-love-gif-14246498',
+    'https://tenor.com/view/seal-hug-cute-love-hug-tight-gif-16412489',
+    'https://tenor.com/view/virtual-hug-penguin-love-heart-gif-14712845',
+    'https://tenor.com/view/hug-anime-gif-15793126',
+    'https://tenor.com/view/anime-anime-love-hug-love-sweet-gif-16131468',
+    'https://tenor.com/view/anime-hug-hearts-hug-bff-gif-13857541',
+    'https://tenor.com/view/anime-hug-love-hug-gif-13925386',
+    'https://tenor.com/view/love-cats-cat-cute-hug-love-gif-16191958',
+    'https://tenor.com/view/cat-hug-dog-annoyed-puppy-gif-15579685',
+    'https://tenor.com/view/hug-k-on-anime-cuddle-gif-16095203',
+
+    ]
+    gif = random.choice(hug_gifs)
+    await ctx.send(f"{ctx.author.mention} hugged {user} {reason}.\n{gif}")
 
 
 bot.run(TOKEN)
