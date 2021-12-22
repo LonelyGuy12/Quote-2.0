@@ -50,8 +50,8 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send(f"Missing required permisions, please check that you have the permission/s to perform this command.")
 
-@bot.command(name = 'hello', help = 'Random greeting!')
 @commands.cooldown(1, 30, commands.BucketType.user)
+@bot.command(name = 'hello', help = 'Random greeting!')
 async def hello(ctx):
     greetings = [
         'Hello!',
@@ -64,39 +64,39 @@ async def hello(ctx):
     response = random.choice(greetings)
     await ctx.send(response)
 
-@bot.command(name = 'quote', help = 'Sends a random message selected from the last 1000 messages!')
 @commands.cooldown(1, 30, commands.BucketType.user)
+@bot.command(name = 'quote', help = 'Sends a random message selected from the last 1000 messages!')
 async def quote(ctx):
     messages = await ctx.history(limit = 1000).flatten()
     msg = random.choice(messages)
     await ctx.send(f'{msg.content} - {str(msg.author)}\n{str(msg.jump_url)}')
 
-@bot.command(name = 'yn', help = 'Yes or no')
 @commands.cooldown(1, 10, commands.BucketType.user)
+@bot.command(name = 'yn', help = 'Yes or no')
 async def yn(ctx):
     decision = ['yes', 'no']
     await ctx.send(random.choice(decision))
 
-@bot.command(name = 'randfloat', help = 'Generates a random float between 0 and 1.')
 @commands.cooldown(1, 10, commands.BucketType.user)
+@bot.command(name = 'randfloat', help = 'Generates a random float between 0 and 1.')
 async def randfloat(ctx):
     num = random.random()
     await ctx.send(num)
 
-@bot.command(name = 'randnum', help = 'Generates a random integer between the range specified.')
 @commands.cooldown(1, 10, commands.BucketType.user)
+@bot.command(name = 'randnum', help = 'Generates a random integer between the range specified.')
 async def randnum(ctx, num1, num2):
     num = random.randint(int(num1), int(num2))
     await ctx.send(num)
 
-@bot.command(name = 'rad', help = 'Convert degrees to radians')
 @commands.cooldown(1, 10, commands.BucketType.user)
+@bot.command(name = 'rad', help = 'Convert degrees to radians')
 async def randnum(ctx, arg):
     num = fractions.Fraction(arg * 1/180).limit_denominator()
     await ctx.send(str(num) + 'π')
 
-@bot.command(name = 'hug', help = 'Hug a person whom you specify!')
 @commands.cooldown(1, 60, commands.BucketType.user)
+@bot.command(name = 'hug', help = 'Hug a person whom you specify!')
 async def hug(ctx, user, *, reason):
     hug_gifs = [
     'https://tenor.com/view/mochi-peachcat-mochi-peachcat-hug-pat-gif-19092449',

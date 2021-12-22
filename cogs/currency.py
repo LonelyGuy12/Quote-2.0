@@ -43,6 +43,7 @@ class Currency(commands.Cog):
         bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
         await ctx.send(f'{ctx.author.mention} Your balance: {bal[0]} Quotes')
         
+    @commands.cooldown(3, 30, commands.BucketType.user)
     @commands.command()
     async def gamble(self, ctx, amount):
         id = str(ctx.author.id)
@@ -58,28 +59,29 @@ class Currency(commands.Cog):
                         await self.balChange(id, -amount)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
-                        await ctx.send(f'{ctx.author.mention} You lost all of your Quotes... You now have {currentBal} Quote/s.')
+                        await ctx.send(f'{ctx.author.mention} You lost all of your Quotes...\nYou now have {currentBal} Quote/s.')
                     if dieroll == 4:
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
-                        await ctx.send(f'{ctx.author.mention} You get nothing. The amount that you have gambled has been returned to you. You now have {currentBal} Quote/s.')
+                        await ctx.send(f'{ctx.author.mention} You get nothing. The amount that you have gambled has been returned to you.\nYou now have {currentBal} Quote/s.')
                     if dieroll == 5:
                         await self.balChange(id, amount * 1.5)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
-                        await ctx.send(f'{ctx.author.mention} The amount that you have gambled has been multiplied by 1.5! You now have {currentBal} Quote/s.')
+                        await ctx.send(f'{ctx.author.mention} The amount that you have gambled has been multiplied by 1.5!\nYou now have {currentBal} Quote/s.')
                     if dieroll == 6:
                         await self.balChange(id, amount * 2)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
-                        await ctx.send(f'{ctx.author.mention} The amount that you have gambled has been doubled! You now have {currentBal} Quote/s.')
+                        await ctx.send(f'{ctx.author.mention} The amount that you have gambled has been doubled!\nYou now have {currentBal} Quote/s.')
                 else: 
                     await ctx.send(f"{ctx.author.mention} You don't have enough money!")
             else:
                 await ctx.send(f"{ctx.author.mention} You cannot gamble less than 1 Quote!")
         except ValueError:
             await ctx.send(f"{ctx.author.mention} Invaid amount! You cannot gamble a string or decimal.")
-                    
+
+    @commands.cooldown(1, 8, commands.BucketType.user)                
     @commands.command(name = 'rps', help = 'Play rock paper scissors.')
     async def rps(self, ctx, choice):
         id = str(ctx.author.id)
@@ -118,8 +120,8 @@ class Currency(commands.Cog):
         else:
             await ctx.send('Invalid input! Please choose from: paper, scissors and rock.')
     
+    @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
-    #@commands.cooldown(1, 15, commands.BucketType.user)
     async def quiz(self, ctx, category):
         id = str(ctx.author.id)
         await self.check(id)
@@ -155,7 +157,7 @@ class Currency(commands.Cog):
                         await self.balChange(id, 4)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
-                        await ctx.send('Correct {.author.mention}! You now have {} Quotes.'.format(msg, currentBal))        
+                        await ctx.send('Correct {.author.mention}!\nYou now have {} Quotes.'.format(msg, currentBal))        
                     else:
                         await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
             except ValueError:
