@@ -81,7 +81,7 @@ class Currency(commands.Cog):
         except ValueError:
             await ctx.send(f"{ctx.author.mention} Invaid amount! You cannot gamble a string or decimal.")
 
-    @commands.cooldown(1, 8, commands.BucketType.user)                
+    @commands.cooldown(1, 5, commands.BucketType.user)                
     @commands.command(name = 'rps', help = 'Play rock paper scissors.')
     async def rps(self, ctx, choice):
         id = str(ctx.author.id)
@@ -120,7 +120,7 @@ class Currency(commands.Cog):
         else:
             await ctx.send('Invalid input! Please choose from: paper, scissors and rock.')
     
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 8, commands.BucketType.user)
     @commands.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
     async def quiz(self, ctx, category):
         id = str(ctx.author.id)
