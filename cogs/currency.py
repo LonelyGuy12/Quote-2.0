@@ -65,7 +65,7 @@ class Currency(commands.Cog):
                         currentBal = currentBal[0]
                         await ctx.send(f'{ctx.author.mention} You get nothing. The amount that you have gambled has been returned to you.\nYou now have {currentBal} Quote/s.')
                     if dieroll == 5:
-                        await self.balChange(id, amount * 1.5)
+                        await self.balChange(id, amount * 0.5)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
                         await ctx.send(f'{ctx.author.mention} The amount that you have gambled has been multiplied by 1.5!\nYou now have {currentBal} Quote/s.')
