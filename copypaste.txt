@@ -64,3 +64,104 @@ async def slap(ctx, user, *, reason):
 
     await ctx.send('{0.author.mention} slapped {1} {2}'.format(ctx, user, reason))
     await ctx.send(random.choice(slap_gifs))
+class Currency(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+    
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print("ready")
+        await self.bot.conn.execute("CREATE TABLE IF NOT EXISTS Currency (userID INT NOT NULL, Quotes INT)")
+        await self.bot.conn.execute("ALTER TABLE economy ADD COLUMN IF NOT EXISTS userID INT NOT NULL")
+        await self.bot.conn.execute("ALTER TABLE economy ADD COLUMN IF NOT EXISTS Quotes INT")
+
+    async def balance(self, id):
+        bal = await self.bot.conn.fetchrow(f"SELECT Quotes FROM Currency WHERE userID = {id}")
+        return bal[0]
+
+    async def top(self):
+        leaderboard = await self.bot.conn.fetchrow("SELECT * FROM Currency ORDER BY Quotes DESC NULLS LAST")
+        return leaderboard
+    
+    async def balChange(self, id, amount):
+        bal = await self.bot.conn.fetchrow(f"SELECT Quotes FROM Currency WHERE userID = {id}")
+        await self.bot.conn.execute(f"UPDATE Currency SET Quotes = {amount + bal[0]} WHERE userID = {id}")
+
+    async def check(self, id):
+        user = await self.bot.conn.fetchrow(f"SELECT * FROM Currency WHERE userID = {id}")
+        if not user:
+            await self.bot.conn.execute(f"INSERT INTO Currency (userID, Quotes) VALUES ({id}, {10})")
+
+    @bot.command()
+    async def bal(self, ctx):
+        id = ctx.author.id
+        await self.check(id)
+        await self.balance(id)
+
+@bot.command(name = 'rps', help = 'Play rock paper scissors!')
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def rps(ctx, choice):
+    rps = str(random.choices(['rock', 'paper', 'scissors'], k = 1)[0])
+    if rps == choice:
+        await ctx.send(f"{str.capitalize(rps)}. It's a tie!")
+
+    elif rps == 'rock' and choice == 'paper':
+        await ctx.send(f"{str.capitalize(rps)}. You win!")
+        
+    elif rps == 'rock' and choice == 'scissors':
+        await ctx.send(f"{str.capitalize(rps)}. You lose...")
+
+    elif rps == 'paper' and choice == 'scissors':
+        await ctx.send(f"{str.capitalize(rps)}. You win!")
+         
+    elif rps == 'paper' and choice == 'rock':
+        await ctx.send(f"{str.capitalize(rps)}. You lose...")
+
+    elif rps == 'scissors' and choice == 'rock':
+        await ctx.send(f"{str.capitalize(rps)}. You win!")
+    
+    elif rps == 'scissors' and choice == 'paper':
+        await ctx.send(f"{str.capitalize(rps)}. You lose...")
+        
+    else:
+        await ctx.send('Invalid input! Please choose from: paper, scissors and rock.')
+
+@bot.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
+@commands.cooldown(1, 15, commands.BucketType.user)
+async def quiz(ctx, category):
+    if category == "quick_maths":
+        operator = random.randint(1, 3)
+        if operator == 1:
+            first = random.randint(0, 250)
+            second = random.randint(0, 250)
+            question = str(first) + " + " + str(second)
+            answer = int(first) + int(second)
+
+        elif operator == 2:
+            first = random.randint(0, 250)
+            second = random.randint(0, 250)
+            question = str(first) + " - " + str(second)
+            answer = int(first) - int(second)
+
+        elif operator == 3:
+            first = random.randint(0, 250)
+            second = random.randint(0, 10)
+            question = str(first) + " * " + str(second)
+            answer = int(first) * int(second)
+
+        await ctx.send(question)
+                
+        def check(msg):
+            return msg.channel == ctx.channel and msg.author == ctx.author
+
+        msg = await bot.wait_for('message', check=check)
+        try:
+            if isinstance(int(msg.content), int) == True:  
+                if int(msg.content) == answer:
+                    await ctx.send('Correct {.author.mention}!'.format(msg))
+                            
+                else:
+                    await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
+        except ValueError:
+            await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')

@@ -1,22 +1,43 @@
+import cogs.currency as currency
+
 import os
 import random
 from discord import user
 import math
 import fractions
-#import psycopg2
-#from psycopg2 import Error
+import asyncpg
+from asyncpg import create_pool
 
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.errors import MissingPermissions
+from discord.colour import Color
+from discord.ext.commands.core import command
+from discord.utils import get
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix = '$')
 
+@bot.command()
+async def load(ctx, extension):
+    bot.load_extension(f'cogs.{extension}')
+
+@bot.command()
+async def unload(ctx, extension):
+    bot.unload_extension(f'cogs.{extension}')    
+
+for filename in os.listdir('./cogs'):
+    if filename.endswith('.py'):
+        bot.load_extension(f'cogs.{filename[:-3]}')
+
+async def create_db_pool():
+    bot.pg_con = await asyncpg.create_pool(host = 'ec2-52-18-185-208.eu-west-1.compute.amazonaws.com', database = 'dd7okavdoaf3n5', user = 'wgaoxwcemfkpcz', port = '5432', password = '8052e09f5059c1e77834898b8f0e41937b0ae02efb3cbdfb9928ab3fccc3872b')
+
 @bot.event
 async def on_ready():
     print(f'Logged on as {bot.user}!')
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -49,73 +70,6 @@ async def quote(ctx):
     messages = await ctx.history(limit = 1000).flatten()
     msg = random.choice(messages)
     await ctx.send(f'{msg.content} - {str(msg.author)}\n{str(msg.jump_url)}')
-
-@bot.command(name = 'rps', help = 'Play rock paper scissors!')
-@commands.cooldown(1, 5, commands.BucketType.user)
-async def rps(ctx, choice):
-    rps = str(random.choices(['rock', 'paper', 'scissors'], k = 1)[0])
-    if rps == choice:
-        await ctx.send(f"{str.capitalize(rps)}. It's a tie!")
-
-    elif rps == 'rock' and choice == 'paper':
-        await ctx.send(f"{str.capitalize(rps)}. You win!")
-        
-    elif rps == 'rock' and choice == 'scissors':
-        await ctx.send(f"{str.capitalize(rps)}. You lose...")
-
-    elif rps == 'paper' and choice == 'scissors':
-        await ctx.send(f"{str.capitalize(rps)}. You win!")
-         
-    elif rps == 'paper' and choice == 'rock':
-        await ctx.send(f"{str.capitalize(rps)}. You lose...")
-
-    elif rps == 'scissors' and choice == 'rock':
-        await ctx.send(f"{str.capitalize(rps)}. You win!")
-    
-    elif rps == 'scissors' and choice == 'paper':
-        await ctx.send(f"{str.capitalize(rps)}. You lose...")
-        
-    else:
-        await ctx.send('Invalid input! Please choose from: paper, scissors and rock.')
-
-@bot.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
-@commands.cooldown(1, 15, commands.BucketType.user)
-async def quiz(ctx, category):
-    if category == "quick_maths":
-        operator = random.randint(1, 3)
-        if operator == 1:
-            first = random.randint(0, 250)
-            second = random.randint(0, 250)
-            question = str(first) + " + " + str(second)
-            answer = int(first) + int(second)
-
-        elif operator == 2:
-            first = random.randint(0, 250)
-            second = random.randint(0, 250)
-            question = str(first) + " - " + str(second)
-            answer = int(first) - int(second)
-
-        elif operator == 3:
-            first = random.randint(0, 250)
-            second = random.randint(0, 10)
-            question = str(first) + " * " + str(second)
-            answer = int(first) * int(second)
-
-        await ctx.send(question)
-                
-        def check(msg):
-            return msg.channel == ctx.channel and msg.author == ctx.author
-
-        msg = await bot.wait_for('message', check=check)
-        try:
-            if isinstance(int(msg.content), int) == True:  
-                if int(msg.content) == answer:
-                    await ctx.send('Correct {.author.mention}!'.format(msg))
-                            
-                else:
-                    await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
-        except ValueError:
-            await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')
 
 @bot.command(name = 'yn', help = 'Yes or no')
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -165,5 +119,5 @@ async def hug(ctx, user, *, reason):
     gif = random.choice(hug_gifs)
     await ctx.send(f"{ctx.author.mention} hugged {user} {reason}.\n{gif}")
 
-
+bot.loop.run_until_complete(create_db_pool())
 bot.run(TOKEN)
