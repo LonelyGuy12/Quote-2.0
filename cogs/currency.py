@@ -82,7 +82,7 @@ class Currency(commands.Cog):
         except ValueError:
             await ctx.send(f"{ctx.author.mention} Invaid amount! You cannot gamble a string or decimal.")
 
-    @commands.cooldown(1, 5, commands.BucketType.user)                
+    @commands.cooldown(1, 7, commands.BucketType.user)                
     @commands.command(name = 'rps', help = 'Play rock paper scissors.')
     async def rps(self, ctx, choice):
         id = str(ctx.author.id)
@@ -121,7 +121,7 @@ class Currency(commands.Cog):
         else:
             await ctx.send('Invalid input! Please choose from: paper, scissors and rock.')
     
-    @commands.cooldown(1, 8, commands.BucketType.user)
+    @commands.cooldown(1, 15, commands.BucketType.user)
     @commands.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
     async def quiz(self, ctx, category):
         id = str(ctx.author.id)
@@ -164,7 +164,7 @@ class Currency(commands.Cog):
             except ValueError:
                 await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')
             
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 90, commands.BucketType.user)
     @commands.command(name = "crime", help = "Commit a crime for high stake rewards and punishments. (Rob, Scam)")
     async def crime(self, ctx, choice):
         id = str(ctx.author.id)
@@ -173,29 +173,32 @@ class Currency(commands.Cog):
         bal = bal[0]        
         locations = ["a sushi store", "a bank", "a school", "a bedroom", "the Google HQ", "your mother's wallet" ]
         scams = ["crypto", "illicit goods", "phone", "phishing", "email", "TV", "website", "school based", "fishing"]
-        reasons_scam = ['you suck at programming', '']
+        reasons_scam = ['you suck at programming', 'your English level is lower than a primary school student', "you haven't had your daily dose of sushi", "your phishing skills aren't up to standard"]
 
-        if (choice.lower() == "rob"):
+        if (choice.lower() == "rob") and bal >= 10:
             chance = random.randrange(0,100)
             if (chance < 93):
                 fine = random.randrange(50, 80)
-                await ctx.send(f"{ctx.author.mention} You were caught stealing from {random.choice(locations)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {(float(fine) / 100) * bal} Quote/s.")
+                await ctx.send(f"{ctx.author.mention} You were caught stealing from {random.choice(locations)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {round((float(fine) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(fine) / 100) * bal, id)
             if (chance >= 93):
                 reward = random.randrange(300, 425)
-                await ctx.send(f"{ctx.author.mention} You're too good at this, you stole from {random.choice(locations)} and earned {round((bal * (float(reward) / 100) - bal))} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(float(reward) / 100)} Quote/s.")
+                await ctx.send(f"{ctx.author.mention} You're too good at this, you stole from {random.choice(locations)} and earned {round((bal * (float(reward) / 100) - bal))} Quote/s ({reward - 100}% of your Quotes).\nYou now have {round(float(reward) / 100)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
-        
-        if (choice.lower() == "scam"):
+        elif bal < 10:
+            ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
+
+        if (choice.lower() == "scam") and bal >= 10:
             chance = random.randrange(0,100)
             if (chance < 80):
                 fine = random.randrange(90,98)
-                await ctx.send(f"{ctx.author.mention} Your {random.choice(scams)} scam was discoverd because {random.choice(reasons_scam)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {(float(fine) / 100) * bal} Quote/s.")
+                await ctx.send(f"{ctx.author.mention} Your {random.choice(scams)} scam was discoverd because {random.choice(reasons_scam)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {round((float(fine) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(fine) / 100) * bal, id)
             if (chance >= 80):
-                reward = random.randrange(120, 200)
-                await ctx.send(f"{ctx.author.mention} You're too good at this, your {random.choice(scams)} scam worked and earned {round(bal * (float(reward) / 100) - bal)} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(float(reward) / 100) * bal} Quote/s.")
+                reward = random.randrange(110, 160)
+                await ctx.send(f"{ctx.author.mention} You're too good at this, your {random.choice(scams)} scam worked and earned {round(bal * (float(reward) / 100) - bal)} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(round(float(reward) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
-    
+        elif bal < 10:
+            ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
 def setup(bot):
     bot.add_cog(Currency(bot))
