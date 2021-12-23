@@ -64,11 +64,14 @@ async def hello(ctx):
     response = random.choice(greetings)
     await ctx.send(response)
 
-@commands.cooldown(1, 30, commands.BucketType.user)
+@commands.cooldown(1, 8, commands.BucketType.user)
 @bot.command(name = 'quote', help = 'Sends a random message selected from the last 1000 messages!')
 async def quote(ctx):
     messages = await ctx.history(limit = 1000).flatten()
     msg = random.choice(messages)
+    while msg.content.startswith("$") or msg.content.startswith("!") or msg.content.startswith("p!") or msg.author.bot:
+        msg = random.choice(messages)
+
     await ctx.send(f'{msg.content} - {str(msg.author)}\n{str(msg.jump_url)}')
 
 @commands.cooldown(1, 10, commands.BucketType.user)

@@ -1,4 +1,5 @@
 import random
+import math
 
 import discord
 from discord.ext import commands
@@ -41,8 +42,8 @@ class Currency(commands.Cog):
         id = str(ctx.author.id)
         await self.check(id)
         bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
-        await ctx.send(f'{ctx.author.mention} Your balance: {bal[0]} Quotes')
-        
+        await ctx.send(f'{ctx.author.mention} Your balance: {bal[0]} Quote/s')
+
     @commands.cooldown(3, 30, commands.BucketType.user)
     @commands.command()
     async def gamble(self, ctx, amount):
@@ -70,7 +71,7 @@ class Currency(commands.Cog):
                         currentBal = currentBal[0]
                         await ctx.send(f'{ctx.author.mention} The amount that you have gambled has been multiplied by 1.5!\nYou now have {currentBal} Quote/s.')
                     if dieroll == 6:
-                        await self.balChange(id, amount * 2)
+                        await self.balChange(id, amount)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
                         await ctx.send(f'{ctx.author.mention} The amount that you have gambled has been doubled!\nYou now have {currentBal} Quote/s.')
@@ -157,12 +158,44 @@ class Currency(commands.Cog):
                         await self.balChange(id, 4)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
-                        await ctx.send('Correct {.author.mention}!\nYou now have {} Quotes.'.format(msg, currentBal))        
+                        await ctx.send('Correct {.author.mention}!\nYou now have {} Quote/s.'.format(msg, currentBal))        
                     else:
                         await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
             except ValueError:
                 await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')
             
-            
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command(name = "crime", help = "Commit a crime for high stake rewards and punishments. (Rob, Scam)")
+    async def crime(self, ctx, choice):
+        id = str(ctx.author.id)
+        await self.check(id)
+        bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+        bal = bal[0]        
+        locations = ["a sushi store", "a bank", "a school", "a bedroom", "the Google HQ", "your mother's wallet" ]
+        scams = ["crypto", "illicit goods", "phone", "phishing", "email", "TV", "website", "school based", "fishing"]
+        reasons_scam = ['you suck at programming', '']
+
+        if (choice.lower() == "rob"):
+            chance = random.randrange(0,100)
+            if (chance < 93):
+                fine = random.randrange(50, 80)
+                await ctx.send(f"{ctx.author.mention} You were caught stealing from {random.choice(locations)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {(float(fine) / 100) * bal} Quote/s.")
+                await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(fine) / 100) * bal, id)
+            if (chance >= 93):
+                reward = random.randrange(300, 425)
+                await ctx.send(f"{ctx.author.mention} You're too good at this, you stole from {random.choice(locations)} and earned {round((bal * (float(reward) / 100) - bal))} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(float(reward) / 100)} Quote/s.")
+                await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
+        
+        if (choice.lower() == "scam"):
+            chance = random.randrange(0,100)
+            if (chance < 80):
+                fine = random.randrange(90,98)
+                await ctx.send(f"{ctx.author.mention} Your {random.choice(scams)} scam was discoverd because {random.choice(reasons_scam)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {(float(fine) / 100) * bal} Quote/s.")
+                await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(fine) / 100) * bal, id)
+            if (chance >= 80):
+                reward = random.randrange(120, 200)
+                await ctx.send(f"{ctx.author.mention} You're too good at this, your {random.choice(scams)} scam worked and earned {round(bal * (float(reward) / 100) - bal)} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(float(reward) / 100) * bal} Quote/s.")
+                await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
+    
 def setup(bot):
     bot.add_cog(Currency(bot))
