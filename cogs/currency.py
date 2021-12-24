@@ -1,5 +1,7 @@
 import random
 import math
+import time
+from datetime import date, datetime, timedelta  
 
 import discord
 from discord.ext import commands
@@ -18,6 +20,14 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("CREATE TABLE IF NOT EXISTS currency (userid TEXT NOT NULL, quotes INT)")
         await self.bot.pg_con.execute("ALTER TABLE currency ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE currency ADD COLUMN IF NOT EXISTS quotes INT")
+
+        await self.bot.pg_con.execute("CREATE TABLE IF NOT EXISTS cooldown (userid TEXT NOT NULL, time TIMESTAMP NOT NULL)")
+        await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
+        await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS time TIMESTAMP NOT NULL")
+
+    async def cooldown(self, id, time):
+        current_time = self.bot.pg_con.fetch("SELECT TIME() FROM cooldown")
+        
 
     async def check(self, id):
         user = await self.bot.pg_con.fetch("SELECT * FROM currency WHERE userid = $1", id)
@@ -53,7 +63,7 @@ class Currency(commands.Cog):
             amount = int(amount)
             bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
             bal = bal[0]
-            if amount >= 1:
+            if amount >= 5:
                 if bal >= amount:
                     dieroll = random.randint(1, 6)
                     if dieroll == 1 or dieroll == 2 or dieroll == 3:
@@ -78,7 +88,7 @@ class Currency(commands.Cog):
                 else: 
                     await ctx.send(f"{ctx.author.mention} You don't have enough money!")
             else:
-                await ctx.send(f"{ctx.author.mention} You cannot gamble less than 1 Quote!")
+                await ctx.send(f"{ctx.author.mention} You cannot gamble less than 5 Quote!")
         except ValueError:
             await ctx.send(f"{ctx.author.mention} Invaid amount! You cannot gamble a string or decimal.")
 
@@ -164,7 +174,7 @@ class Currency(commands.Cog):
             except ValueError:
                 await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')
             
-    @commands.cooldown(1, 90, commands.BucketType.user)
+    @commands.cooldown(1, 45, commands.BucketType.user)
     @commands.command(name = "crime", help = "Commit a crime for high stake rewards and punishments. (Rob, Scam)")
     async def crime(self, ctx, choice):
         id = str(ctx.author.id)
@@ -190,15 +200,26 @@ class Currency(commands.Cog):
 
         if (choice.lower() == "scam") and bal >= 10:
             chance = random.randrange(0,100)
-            if (chance < 80):
+            if (chance < 85):
                 fine = random.randrange(90,98)
                 await ctx.send(f"{ctx.author.mention} Your {random.choice(scams)} scam was discoverd because {random.choice(reasons_scam)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {round((float(fine) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(fine) / 100) * bal, id)
-            if (chance >= 80):
-                reward = random.randrange(110, 160)
+            if (chance >= 85):
+                reward = random.randrange(120, 200)
                 await ctx.send(f"{ctx.author.mention} You're too good at this, your {random.choice(scams)} scam worked and earned {round(bal * (float(reward) / 100) - bal)} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(round(float(reward) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
         elif bal < 10:
             ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
+        
+    @commands.cooldown(1, 9999999999999, commands.BucketType.user)
+    @commands.command(name = 'MerryChristmas')
+    async def MerryChristmas(self, ctx):
+        id = str(ctx.author.id)
+        await self.check(id)
+        await self.balChange(id, 250)
+        bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+        bal = bal[0]
+        await ctx.send(f'**Merry Christmas!** Enjoy your 250 Quotes.\nYour current balance is {bal} Quotes.')
+        
 def setup(bot):
     bot.add_cog(Currency(bot))

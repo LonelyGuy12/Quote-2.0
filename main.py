@@ -7,6 +7,7 @@ import math
 import fractions
 import asyncpg
 from asyncpg import create_pool
+from datetime import datetime, date, timedelta
 
 import discord
 from discord.ext import commands
@@ -42,7 +43,7 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(f"This command is on cooldown! You can use it again in {round(error.retry_after, 2)} seconds.")
+        await ctx.send(f"This command is on cooldown! You can use it again in {round(error.retry_after, 2)}.")
 
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Missing required argument/s. Use $help [command] to view the required arguments.")
@@ -76,7 +77,7 @@ async def quote(ctx):
 
 @commands.cooldown(1, 10, commands.BucketType.user)
 @bot.command(name = 'yn', help = 'Yes or no')
-async def yn(ctx):
+async def yn(ctx, *, question):
     decision = ['yes', 'no']
     await ctx.send(random.choice(decision))
 
