@@ -196,7 +196,7 @@ class Currency(commands.Cog):
                 await ctx.send(f"{ctx.author.mention} You're too good at this, you stole from {random.choice(locations)} and earned {round((bal * (float(reward) / 100) - bal))} Quote/s ({reward - 100}% of your Quotes).\nYou now have {round(float(reward) / 100)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
         elif bal < 10:
-            ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
+            await ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
 
         if (choice.lower() == "scam") and bal >= 10:
             chance = random.randrange(0,100)
@@ -209,7 +209,7 @@ class Currency(commands.Cog):
                 await ctx.send(f"{ctx.author.mention} You're too good at this, your {random.choice(scams)} scam worked and earned {round(bal * (float(reward) / 100) - bal)} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(round(float(reward) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
         elif bal < 10:
-            ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
+            await ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
         
     @commands.cooldown(1, 9999999999999, commands.BucketType.user)
     @commands.command(name = 'MerryChristmas')
