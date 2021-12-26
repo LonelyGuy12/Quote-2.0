@@ -211,15 +211,15 @@ class Currency(commands.Cog):
         elif bal < 10:
             await ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
         
-    @commands.cooldown(1, 9999999999999, commands.BucketType.user)
-    @commands.command(name = 'MerryChristmas')
-    async def MerryChristmas(self, ctx):
+    @commands.cooldown(1, 86400, commands.BucketType.user)
+    @commands.command(name = 'daily')
+    async def daily(self, ctx):
         id = str(ctx.author.id)
         await self.check(id)
-        await self.balChange(id, 250)
+        await self.balChange(id, 50)
         bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
         bal = bal[0]
-        await ctx.send(f'**Merry Christmas!** Enjoy your 250 Quotes.\nYour current balance is {bal} Quotes.')
+        await ctx.send(f'Enjoy your daily 50 Quotes.\nYour current balance is {bal} Quotes.')
         
 def setup(bot):
     bot.add_cog(Currency(bot))
