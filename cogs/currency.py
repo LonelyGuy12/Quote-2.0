@@ -114,16 +114,16 @@ class Currency(commands.Cog):
         await self.check_bal(id)
         rps = str(random.choices(['rock', 'paper', 'scissors'], k = 1)[0])
         if rps == choice:
-            await ctx.send(f"{str.capitalize(rps)}. It's a tie!")
+            await ctx.send(f"{ctx.author.mention} {str.capitalize(rps)}. It's a tie!")
 
         elif rps == 'rock' and choice == 'paper':
             await self.balChange(id, 2)
             currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
             currentBal = currentBal[0]
-            await ctx.send(f"{str.capitalize(rps)}. You win! You now have {currentBal} Quote/s.")
+            await ctx.send(f"{ctx.author.mention} {str.capitalize(rps)}. You win! You now have {currentBal} Quote/s.")
             
         elif rps == 'rock' and choice == 'scissors':
-            await ctx.send(f"{str.capitalize(rps)}. You lose...")
+            await ctx.send(f"{ctx.author.mention} {str.capitalize(rps)}. You lose...")
 
         elif rps == 'paper' and choice == 'scissors':
             await self.balChange(id, 2)
