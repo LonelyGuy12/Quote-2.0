@@ -9,6 +9,9 @@ from discord.colour import Color
 from discord.ext.commands.core import command
 from discord.utils import get
 
+vowels = ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']
+consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z', 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z']
+
 class Currency(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -25,11 +28,16 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS time TIMESTAMP NOT NULL")
 
+        await self.bot.pg_con.execute("CREATE TABLE IF NOT EXISTS inventory (userid TEXT NOT NULL, pizzas INT)")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizzas INT")
+
+
     async def cooldown(self, id, time):
         current_time = self.bot.pg_con.fetch("SELECT TIME() FROM cooldown")
         
 
-    async def check(self, id):
+    async def check_bal(self, id):
         user = await self.bot.pg_con.fetch("SELECT * FROM currency WHERE userid = $1", id)
         if not user:
             await self.bot.pg_con.execute("INSERT INTO currency (userid, quotes) VALUES ($1, $2)", id, 10)
@@ -46,11 +54,15 @@ class Currency(commands.Cog):
         bal = await self.bot.pg_con.fetchrow("SELECT Quotes FROM currency WHERE userid = $1", id)
         await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", amount + bal[0], id)
 
+    async def check_inv(self, id):
+        user = await self.bot.pg_con.fetch("SELECT * FROM inventory WHERE userid = $1", id)
+        if not user:
+            await self.bot.pg_con.execute("INSERT INTO inventory (userid) VALUES ($1)", id)
 
     @commands.command()
     async def bal(self, ctx):
         id = str(ctx.author.id)
-        await self.check(id)
+        await self.check_bal(id)
         bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
         await ctx.send(f'{ctx.author.mention} Your balance: {bal[0]} Quote/s')
 
@@ -58,11 +70,14 @@ class Currency(commands.Cog):
     @commands.command()
     async def gamble(self, ctx, amount):
         id = str(ctx.author.id)
-        await self.check(id)
+        await self.check_bal(id)
         try:
-            amount = int(amount)
             bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
             bal = bal[0]
+            if amount == 'all':
+                amount = int(bal)
+            else:
+                amount = int(amount)
             if amount >= 5:
                 if bal >= amount:
                     dieroll = random.randint(1, 6)
@@ -96,7 +111,7 @@ class Currency(commands.Cog):
     @commands.command(name = 'rps', help = 'Play rock paper scissors.')
     async def rps(self, ctx, choice):
         id = str(ctx.author.id)
-        await self.check(id)
+        await self.check_bal(id)
         rps = str(random.choices(['rock', 'paper', 'scissors'], k = 1)[0])
         if rps == choice:
             await ctx.send(f"{str.capitalize(rps)}. It's a tie!")
@@ -114,28 +129,28 @@ class Currency(commands.Cog):
             await self.balChange(id, 2)
             currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
             currentBal = currentBal[0]
-            await ctx.send(f"{str.capitalize(rps)}. You win! You now have {currentBal} Quote/s.")
+            await ctx.send(f"{ctx.author.mention} {str.capitalize(rps)}. You win! You now have {currentBal} Quote/s.")
             
         elif rps == 'paper' and choice == 'rock':
-            await ctx.send(f"{str.capitalize(rps)}. You lose...")
+            await ctx.send(f"{ctx.author.mention} {str.capitalize(rps)}. You lose...")
 
         elif rps == 'scissors' and choice == 'rock':
             await self.balChange(id, 2)
             currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
             currentBal = currentBal[0]
-            await ctx.send(f"{str.capitalize(rps)}. You win! You now have {currentBal} Quote/s.")
+            await ctx.send(f"{ctx.author.mention} {str.capitalize(rps)}. You win! You now have {currentBal} Quote/s.")
         
         elif rps == 'scissors' and choice == 'paper':
-            await ctx.send(f"{str.capitalize(rps)}. You lose...")
+            await ctx.send(f"{ctx.author.mention} {str.capitalize(rps)}. You lose...")
             
         else:
-            await ctx.send('Invalid input! Please choose from: paper, scissors and rock.')
+            await ctx.send(f'{ctx.author.mention} Invalid input! Please choose from: paper, scissors and rock.')
     
     @commands.cooldown(1, 15, commands.BucketType.user)
     @commands.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
     async def quiz(self, ctx, category):
         id = str(ctx.author.id)
-        await self.check(id)
+        await self.check_bal(id)
         if category == "quick_maths":
             operator = random.randint(1, 3)
             if operator == 1:
@@ -173,12 +188,54 @@ class Currency(commands.Cog):
                         await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
             except ValueError:
                 await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')
-            
+
+    @commands.cooldown(1, 3600, commands.BucketType.user)
+    @commands.command(name = "work", help = "Earn Quotes by working.")
+    async def work(self, ctx):
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+        bal = bal[0]
+        jobs = ['a cleaner', 'a dentist', 'a GP doctor', 'a surgeon', 'a welder', 'a miner', 'a pro gamer', 'a streamer', 'a volunteer', 'a terrorist', "a McDonald's employee", 'a chef']
+        job = random.choices(jobs, weights = (50, 15, 12, 9, 30, 14, 37, 47, 35, 4, 49, 33))
+        job = job[0]
+        wage = 0
+        if job == 'a cleaner':
+            wage = random.randint(16, 23)
+        elif job == 'a dentist':
+            wage = random.randint(68, 85)
+        elif job == 'a GP doctor':
+            wage = random.randint(75, 85)
+        elif job == 'a surgeon':
+            wage = random.randint(95, 110)
+        elif job == 'a welder':
+            wage = random.randint(30, 45)
+        elif job == 'a miner':
+            wage = random.randint(70, 80)
+        elif job == 'a pro gamer':
+            wage = random.randint(25, 41)
+        elif job == 'a streamer':
+            wage = random.randint(15, 29)
+        elif job == 'a volunteer':
+            wage = 0
+        elif job == 'a terrorist':
+            wage = -int((round(bal/2)))
+        elif job == "a McDonald's employee":
+            wage = random.randint(15, 25)
+        elif job == 'a chef':
+            wage = random.randint(28, 40)
+
+        print(wage)
+        await self.balChange(id, wage)
+        current_bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+        current_bal = current_bal[0]
+        await ctx.send(f'{ctx.author.mention} You worked as {job} and earned {wage} Quotes! You now have {current_bal} Quotes.')            
+
     @commands.cooldown(1, 45, commands.BucketType.user)
     @commands.command(name = "crime", help = "Commit a crime for high stake rewards and punishments. (Rob, Scam)")
     async def crime(self, ctx, choice):
         id = str(ctx.author.id)
-        await self.check(id)
+        await self.check_bal(id)
         bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
         bal = bal[0]        
         locations = ["a sushi store", "a bank", "a school", "a bedroom", "the Google HQ", "your mother's wallet" ]
@@ -209,17 +266,91 @@ class Currency(commands.Cog):
                 await ctx.send(f"{ctx.author.mention} You're too good at this, your {random.choice(scams)} scam worked and earned {round(bal * (float(reward) / 100) - bal)} Quote/s ({reward - 100}% of your Quotes).\nYou now have {(round(float(reward) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
         elif bal < 10:
-            await ctx.send("Insufficient funds, try again when you have at least 10 Quotes!")
-        
-    @commands.cooldown(1, 86400, commands.BucketType.user)
-    @commands.command(name = 'daily')
-    async def daily(self, ctx):
+            await ctx.send(f"{ctx.author.mention} Insufficient funds, try again when you have at least 10 Quotes!")
+
+        if (choice.lower() == "murder") and bal >= 10:
+            chance = random.randrange(0,100)
+            if (chance < 95):
+                fine = random.randrange(45,90)
+                await ctx.send(f"{ctx.author.mention} Your murder was prevented! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {round((float(fine) / 100) * bal)} Quote/s.")
+                await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(fine) / 100) * bal, id)
+            if (chance >= 95):
+                reward = random.randrange(300, 500)
+                await ctx.send(f"{ctx.author.mention} What is wrong with you, you earned {round(bal * (float(reward) / 100) - bal)} Quote/s from your target ({reward - 100}% of your Quotes).\nYou now have {(round(float(reward) / 100) * bal)} Quote/s.")
+                await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(reward) / 100) * bal, id)
+        elif bal < 10:
+            await ctx.send(f"{ctx.author.mention} Insufficient funds, try again when you have at least 10 Quotes!")
+
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.command(name = 'shop', help = "See what's available in the virtual shop.")
+    async def shop(self, ctx):
+        await ctx.send("""```
+------------------------------Shop------------------------------
+Pizza - 5 Quotes
+```""")
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command(name = 'buy', help = 'Buy virtual items from the virtual shop with your Quotes.')
+    async def buy(self, ctx, item, amount):
+        try:
+            amount = int(amount)
+            id = str(ctx.author.id)
+            await self.check_bal(id)
+            await self.check_inv(id)
+            bal = await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+            bal = bal[0]
+            pizzas = await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id)
+            pizzas = pizzas[0]
+            if item.startswith(tuple(vowels)) and amount == 1:
+                aORan = 'an'
+            elif item.startswith(tuple(consonants)) and amount == 1:
+                aORan = 'a'
+            else:
+                aORan = ""
+
+            if amount == 1:
+                plural  = ''
+                valid = True
+            elif amount > 1:
+                plural = 's'
+                valid = True
+            elif amount <= 0:
+                valid = False
+            else:
+                valid = False
+
+            if item.lower() == 'pizza' and valid == True:
+                price = int(5)
+                total = int(price * amount)
+                if bal >= total:
+                    await self.balChange(id, -total)
+                    current_bal = await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+                    current_bal = current_bal[0]
+                    await self.bot.pg_con.execute("UPDATE inventory SET pizzas = $1 WHERE userid = $2", amount + pizzas, id)
+                    current_pizzas = await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id)
+                    current_pizzas = current_pizzas[0]
+                    await ctx.send(f"{ctx.author.mention} Thank you for purchasing {amount} {aORan} {item}{plural}! You have spent a total of {total} Quotes. You now have {current_bal} Quotes and {current_pizzas} pizzas.")
+                elif valid == False:
+                    await ctx.send(f"{ctx.author.mention} Invalid input.")
+                else:
+                    await ctx.send(f"{ctx.author.mention} You do not have enough money to purchase this item! Use $shop to check the prices of items.")
+            
+        except ValueError:
+            await ctx.send(f"{ctx.author.mention} Error, check the command usage using `$help [command]`.")
+            
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command(name = 'inventory', help = 'Checks your for items that you have purchased.')
+    async def inventory(self, ctx):
         id = str(ctx.author.id)
-        await self.check(id)
-        await self.balChange(id, 50)
-        bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
-        bal = bal[0]
-        await ctx.send(f'Enjoy your daily 50 Quotes.\nYour current balance is {bal} Quotes.')
-        
+        await self.check_bal(id)
+        await self.check_inv(id)
+        pizzas = await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id)
+        pizzas = pizzas[0]
+        await ctx.send(f'''{ctx.author.mention}```
+------------------------------Inventory------------------------------
+Pizza: {pizzas}
+```''')
+
+
 def setup(bot):
     bot.add_cog(Currency(bot))
