@@ -232,7 +232,7 @@ class Currency(commands.Cog):
         current_bal = current_bal[0]
         await ctx.send(f'{ctx.author.mention} You worked as {job} and earned {wage} Quotes! You now have {current_bal} Quotes.')            
 
-    @commands.cooldown(1, 45, commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.command(name = "crime", help = "Commit a crime for high stake rewards and punishments. (Rob, Scam, Murder)")
     async def crime(self, ctx, choice):
         id = str(ctx.author.id)
