@@ -44,7 +44,7 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send("This command is on cooldown! You can use it again in <t:{}:R>".format(int(time.time() + error.retry_after)))
+        await ctx.send("This command is on cooldown! You can use it again <t:{}:R>".format(int(time.time() + error.retry_after)))
 
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Missing required argument/s. Use $help [command] to view the required arguments.")
