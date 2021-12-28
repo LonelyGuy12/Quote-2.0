@@ -347,7 +347,7 @@ Sushi - 4 Quotes
                     await self.bot.pg_con.execute("UPDATE inventory SET sushi = $1 WHERE userid = $2", amount + sushi, id) 
                     current_sushi = await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id)
                     current_sushi = current_sushi[0]
-                    await ctx.send(f"{ctx.author.mention} Thank you for purchasing {amount} {item}{plural}! You have spent a total of {total} Quotes. You now have {current_bal} Quotes and {current_sushi} sushi.")
+                    await ctx.send(f"{ctx.author.mention} Thank you for purchasing {amount} {item}! You have spent a total of {total} Quotes. You now have {current_bal} Quotes and {current_sushi} sushi.")
                 elif valid == False:
                     await ctx.send(f"{ctx.author.mention} Invalid input.")
                 else:
