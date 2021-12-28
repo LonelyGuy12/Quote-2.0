@@ -28,9 +28,10 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS time TIMESTAMP NOT NULL")
 
-        await self.bot.pg_con.execute("CREATE TABLE IF NOT EXISTS inventory (userid TEXT NOT NULL, pizzas INT)")
+        await self.bot.pg_con.execute("CREATE TABLE IF NOT EXISTS inventory (userid TEXT NOT NULL, pizzas INT NOT NULL DEFAULT 0, sushi INT NOT NULL DEFAULT 0)")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
-        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizzas INT")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizzas INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sushi INT NOT NULL DEFAULT 0")
 
 
     async def cooldown(self, id, time):
@@ -284,9 +285,11 @@ class Currency(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(name = 'shop', help = "See what's available in the virtual shop.")
     async def shop(self, ctx):
-        await ctx.send("""```
-------------------------------Shop------------------------------
+        await ctx.send("""```css
+[Shop]
+
 Pizza - 5 Quotes
+Sushi - 4 Quotes
 ```""")
 
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -301,12 +304,8 @@ Pizza - 5 Quotes
             bal = bal[0]
             pizzas = await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id)
             pizzas = pizzas[0]
-            if item.startswith(tuple(vowels)) and amount == 1:
-                aORan = 'an'
-            elif item.startswith(tuple(consonants)) and amount == 1:
-                aORan = 'a'
-            else:
-                aORan = ""
+            sushi = await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id)
+            sushi = sushi[0]
 
             if amount == 1:
                 plural  = ''
@@ -329,12 +328,31 @@ Pizza - 5 Quotes
                     await self.bot.pg_con.execute("UPDATE inventory SET pizzas = $1 WHERE userid = $2", amount + pizzas, id)
                     current_pizzas = await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id)
                     current_pizzas = current_pizzas[0]
-                    await ctx.send(f"{ctx.author.mention} Thank you for purchasing {amount} {aORan} {item}{plural}! You have spent a total of {total} Quotes. You now have {current_bal} Quotes and {current_pizzas} pizzas.")
+                    await ctx.send(f"{ctx.author.mention} Thank you for purchasing {amount} {item}{plural}! You have spent a total of {total} Quotes. You now have {current_bal} Quotes and {current_pizzas} pizzas.")
                 elif valid == False:
                     await ctx.send(f"{ctx.author.mention} Invalid input.")
                 else:
                     await ctx.send(f"{ctx.author.mention} You do not have enough money to purchase this item! Use $shop to check the prices of items.")
             
+            elif item.lower() == 'sushi' and valid == True:
+                price = int(4)
+                total = int(price * amount)
+                if bal >= total:
+                    await self.balChange(id, -total)
+                    current_bal = await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+                    current_bal = current_bal[0]
+                    print(amount)
+                    print(current_bal)
+                    print(total)
+                    await self.bot.pg_con.execute("UPDATE inventory SET sushi = $1 WHERE userid = $2", amount + sushi, id) 
+                    current_sushi = await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id)
+                    current_sushi = current_sushi[0]
+                    await ctx.send(f"{ctx.author.mention} Thank you for purchasing {amount} {item}{plural}! You have spent a total of {total} Quotes. You now have {current_bal} Quotes and {current_sushi} sushi.")
+                elif valid == False:
+                    await ctx.send(f"{ctx.author.mention} Invalid input.")
+                else:
+                    await ctx.send(f"{ctx.author.mention} You do not have enough money to purchase this item! Use $shop to check the prices of items.")
+
         except ValueError:
             await ctx.send(f"{ctx.author.mention} Error, check the command usage using `$help [command]`.")
             
@@ -346,9 +364,13 @@ Pizza - 5 Quotes
         await self.check_inv(id)
         pizzas = await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id)
         pizzas = pizzas[0]
-        await ctx.send(f'''{ctx.author.mention}```
-------------------------------Inventory------------------------------
+        sushi = await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id)
+        sushi = sushi[0]
+        await ctx.send(f'''{ctx.author.mention}```css
+[Inventory]
+
 Pizza: {pizzas}
+Sushi: {sushi}
 ```''')
 
 
