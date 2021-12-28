@@ -233,7 +233,7 @@ class Currency(commands.Cog):
         await ctx.send(f'{ctx.author.mention} You worked as {job} and earned {wage} Quotes! You now have {current_bal} Quotes.')            
 
     @commands.cooldown(1, 45, commands.BucketType.user)
-    @commands.command(name = "crime", help = "Commit a crime for high stake rewards and punishments. (Rob, Scam)")
+    @commands.command(name = "crime", help = "Commit a crime for high stake rewards and punishments. (Rob, Scam, Murder)")
     async def crime(self, ctx, choice):
         id = str(ctx.author.id)
         await self.check_bal(id)
@@ -341,9 +341,6 @@ Sushi - 4 Quotes
                     await self.balChange(id, -total)
                     current_bal = await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                     current_bal = current_bal[0]
-                    print(amount)
-                    print(current_bal)
-                    print(total)
                     await self.bot.pg_con.execute("UPDATE inventory SET sushi = $1 WHERE userid = $2", amount + sushi, id) 
                     current_sushi = await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id)
                     current_sushi = current_sushi[0]
@@ -373,6 +370,14 @@ Pizza: {pizzas}
 Sushi: {sushi}
 ```''')
 
+    @commands.command(name = 'top', help = 'Check who is at the top of the leaderboard.')
+    async def top(self, ctx):
+        id = str(ctx.author.id)
+        leaderboard = await self.bot.pg_con.fetch("SELECT (userid, quotes) FROM currency ORDER BY quotes DESC")
+        leaderboard = str(leaderboard)
+        leaderboard = leaderboard.replace("[", "").replace("<Record row=('", "").replace("'", "").replace(")>", "").replace("]", "")
+        await ctx.send(leaderboard)
+        
 
 def setup(bot):
     bot.add_cog(Currency(bot))
