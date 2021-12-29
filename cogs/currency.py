@@ -412,7 +412,7 @@ Sushi - 4 Quotes
                 mackerel = ''
             
             if (await self.bot.pg_con.fetchrow("SELECT sardine FROM inventory WHERE userid = $1", id))[0] > 0:
-                sardine = (f'\nSardine: {str((await self.bot.pg_con.fetchrow("SELECT mackerel FROM inventory WHERE userid = $1", id))[0])}')
+                sardine = (f'\nSardine: {str((await self.bot.pg_con.fetchrow("SELECT sardine FROM inventory WHERE userid = $1", id))[0])}')
             else:
                 sardine = ''
 
