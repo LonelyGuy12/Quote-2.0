@@ -2,6 +2,7 @@ import random
 import math
 import time
 from datetime import date, datetime, timedelta  
+import numpy
 
 import discord
 from discord.ext import commands
@@ -28,10 +29,37 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE cooldown ADD COLUMN IF NOT EXISTS time TIMESTAMP NOT NULL")
 
-        await self.bot.pg_con.execute("CREATE TABLE IF NOT EXISTS inventory (userid TEXT NOT NULL, pizzas INT NOT NULL DEFAULT 0, sushi INT NOT NULL DEFAULT 0)")
+        await self.bot.pg_con.execute("""CREATE TABLE IF NOT EXISTS inventory 
+        (userid TEXT NOT NULL, 
+        pizzas INT NOT NULL DEFAULT 0, 
+        sushi INT NOT NULL DEFAULT 0, 
+        catfish INT NOT NULL DEFAULT 0, 
+        mackerel INT NOT NULL DEFAULT 0, 
+        sardine INT NOT NULL DEFAULT 0, 
+        walleye INT NOT NULL DEFAULT 0, 
+        salmon INT NOT NULL DEFAULT 0, 
+        cod INT NOT NULL DEFAULT 0, 
+        tuna INT NOT NULL DEFAULT 0, 
+        whale INT NOT NULL DEFAULT 0, 
+        mermaid INT NOT NULL DEFAULT 0, 
+        dragon INT NOT NULL DEFAULT 0, 
+        kraken INT NOT NULL DEFAULT 0, 
+        siren INT NOT NULL DEFAULT 0)""")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizzas INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sushi INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS catfish INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS mackerel INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sardine INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS walleye INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS salmon INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cod INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS tuna INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS whale INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS mermaid INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS dragon INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS kraken INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS siren INT NOT NULL DEFAULT 0")
 
 
     async def cooldown(self, id, time):
@@ -354,21 +382,89 @@ Sushi - 4 Quotes
             await ctx.send(f"{ctx.author.mention} Error, check the command usage using `$help [command]`.")
             
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @commands.command(name = 'inventory', help = 'Checks your for items that you have purchased.')
-    async def inventory(self, ctx):
+    @commands.command(name = 'inventory', help = 'Checks your for items that you have purchased. Categories are: food, fish.')
+    async def inventory(self, ctx, category):
         id = str(ctx.author.id)
         await self.check_bal(id)
         await self.check_inv(id)
-        pizzas = await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id)
-        pizzas = pizzas[0]
-        sushi = await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id)
-        sushi = sushi[0]
-        await ctx.send(f'''{ctx.author.mention}```css
-[Inventory]
 
-Pizza: {pizzas}
-Sushi: {sushi}
-```''')
+        if category == 'food':
+            if  (await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id))[0] > 0:
+                pizza = (f'\nPizza: {str((await self.bot.pg_con.fetchrow("SELECT pizzas FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                pizza = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id))[0] > 0:
+                sushi = (f'\nSushi: {str((await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                sushi = ''
+
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{pizza}{sushi}```''')
+
+        if category == 'fish':
+
+            if (await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0] > 0:
+                catfish = (f'\nCatfish: {str((await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                catfish = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT mackerel FROM inventory WHERE userid = $1", id))[0] > 0:
+                mackerel = (f'\nMackerel: {str((await self.bot.pg_con.fetchrow("SELECT mackerel FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                mackerel = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT sardine FROM inventory WHERE userid = $1", id))[0] > 0:
+                sardine = (f'\nSardine: {str((await self.bot.pg_con.fetchrow("SELECT mackerel FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                sardine = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT walleye FROM inventory WHERE userid = $1", id))[0] > 0:
+                walleye = (f'\nWalleye: {str((await self.bot.pg_con.fetchrow("SELECT walleye FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                walleye = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0] > 0:
+                salmon = (f'\Salmon: {str((await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                salmon = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT cod FROM inventory WHERE userid = $1", id))[0] > 0:
+                cod = (f'\nCod: {str((await self.bot.pg_con.fetchrow("SELECT cod FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                cod = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT tuna FROM inventory WHERE userid = $1", id))[0] > 0:
+                tuna = (f'\nTuna: {str((await self.bot.pg_con.fetchrow("SELECT tuna FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                tuna = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT whale FROM inventory WHERE userid = $1", id))[0] > 0:
+                whale = (f'\nWhale: {str((await self.bot.pg_con.fetchrow("SELECT whale FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                whale = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT mermaid FROM inventory WHERE userid = $1", id))[0] > 0:
+                mermaid = (f'\nMermaid: {str((await self.bot.pg_con.fetchrow("SELECT mermaid FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                mermaid = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0] > 0:
+                dragon = (f'\nDragon: {str((await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                dragon = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT kraken FROM inventory WHERE userid = $1", id))[0] > 0:
+                kraken = (f'\nKraken: {str((await self.bot.pg_con.fetchrow("SELECT kraken FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                kraken = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT siren FROM inventory WHERE userid = $1", id))[0] > 0:
+                siren = (f'\nSiren: {str((await self.bot.pg_con.fetchrow("SELECT siren FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                siren = ''
+
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Fish]\n{catfish}{mackerel}{sardine}{walleye}{salmon}{cod}{tuna}{whale}{mermaid}{dragon}{kraken}{siren}```''')
+
 
     @commands.command(name = 'top', help = 'Check who is at the top of the leaderboard.')
     async def top(self, ctx):
@@ -377,7 +473,29 @@ Sushi: {sushi}
         leaderboard = str(leaderboard)
         leaderboard = leaderboard.replace("[", "").replace("<Record row=('", "").replace("'", "").replace(")>", "").replace("]", "")
         await ctx.send(leaderboard)
-        
+    
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.command(name = 'fish', help = 'Fish some virtual fish to earn Quotes!')
+    async def fish(self, ctx):
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        await self.check_inv(id)
+        fish_species = ['catfish', 'mackerel', 'sardine', 'walleye', 'salmon', 'cod', 'tuna', 'whale', 'mermaid', 'dragon', 'kraken', 'siren']
+        fish = (random.choices(fish_species, weights = (100, 95, 93, 92, 90, 88, 87, 30, 15, 7, 4, 2)))[0]
+        print(fish)
+        species_amount = int((await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0])
+        print(species_amount)
+        await self.bot.pg_con.execute(f"UPDATE inventory SET {fish} = $1 WHERE userid = $2", (species_amount + 1), id)
+        current_species_amount = (await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0]
+        await ctx.send(f"You have fished up a **{fish}**, you now have {current_species_amount} {fish}.")
+    
+    @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
+    async def sell(self, ctx, item):
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        await self.check_inv(id)
+
+
 
 def setup(bot):
     bot.add_cog(Currency(bot))
