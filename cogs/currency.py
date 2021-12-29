@@ -2,7 +2,6 @@ import random
 import math
 import time
 from datetime import date, datetime, timedelta  
-import numpy
 
 import discord
 from discord.ext import commands
