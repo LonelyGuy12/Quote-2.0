@@ -380,7 +380,7 @@ Sushi - 4 Quotes
             await ctx.send(f"{ctx.author.mention} Error, check the command usage using `$help [command]`.")
             
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @commands.command(name = 'inventory', help = 'Checks your for items that you have purchased. Categories are: food, fish.')
+    @commands.command(name = 'inventory' and 'inv', help = 'Checks your for items that you have purchased. Categories are: food, fish.')
     async def inventory(self, ctx, category):
         id = str(ctx.author.id)
         await self.check_bal(id)
