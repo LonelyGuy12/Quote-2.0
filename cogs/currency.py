@@ -485,9 +485,9 @@ Sushi - 4 Quotes
             species_amount = int((await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0])
             await self.bot.pg_con.execute(f"UPDATE inventory SET {fish} = $1 WHERE userid = $2", (species_amount + 1), id)
             current_species_amount = (await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0]
-            await ctx.send(f"You have fished up a **{fish}**, you now have {current_species_amount} {fish}.")
+            await ctx.send(f"You fished up a **{fish}**, you now have {current_species_amount} {fish}.")
         else:
-            await ctx.send(f"You have fished up **nothing**. Better luck next time.")
+            await ctx.send(f"You fished up **nothing**. Better luck next time.")
     
     @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
     async def sell(self, ctx, item):
