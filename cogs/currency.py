@@ -479,14 +479,15 @@ Sushi - 4 Quotes
         id = str(ctx.author.id)
         await self.check_bal(id)
         await self.check_inv(id)
-        fish_species = ['catfish', 'mackerel', 'sardine', 'walleye', 'salmon', 'cod', 'tuna', 'whale', 'mermaid', 'dragon', 'kraken', 'siren']
-        fish = (random.choices(fish_species, weights = (100, 95, 93, 92, 90, 88, 87, 30, 15, 7, 4, 2)))[0]
-        print(fish)
-        species_amount = int((await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0])
-        print(species_amount)
-        await self.bot.pg_con.execute(f"UPDATE inventory SET {fish} = $1 WHERE userid = $2", (species_amount + 1), id)
-        current_species_amount = (await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0]
-        await ctx.send(f"You have fished up a **{fish}**, you now have {current_species_amount} {fish}.")
+        fish_species = ['nothing', 'catfish', 'mackerel', 'sardine', 'walleye', 'salmon', 'cod', 'tuna', 'whale', 'mermaid', 'dragon', 'kraken', 'siren']
+        fish = (random.choices(fish_species, weights = (125, 100, 95, 93, 92, 90, 88, 87, 30, 15, 7, 4, 2)))[0]
+        if fish != 'nothing':
+            species_amount = int((await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0])
+            await self.bot.pg_con.execute(f"UPDATE inventory SET {fish} = $1 WHERE userid = $2", (species_amount + 1), id)
+            current_species_amount = (await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0]
+            await ctx.send(f"You have fished up a **{fish}**, you now have {current_species_amount} {fish}.")
+        else:
+            await ctx.send(f"You have fished up **nothing**. Better luck next time.")
     
     @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
     async def sell(self, ctx, item):
