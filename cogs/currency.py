@@ -43,7 +43,11 @@ class Currency(commands.Cog):
         mermaid INT NOT NULL DEFAULT 0, 
         dragon INT NOT NULL DEFAULT 0, 
         kraken INT NOT NULL DEFAULT 0, 
-        siren INT NOT NULL DEFAULT 0)""")
+        siren INT NOT NULL DEFAULT 0,
+        technoblade INT NOT NULL DEFAULT 0,
+        hydra INT NOT NULL DEFAULT 0,
+        selkie INT NOT NULL DEFAULT 0
+        )""")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizzas INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sushi INT NOT NULL DEFAULT 0")
@@ -59,6 +63,9 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS dragon INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS kraken INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS siren INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS selkie INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS hydra INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS technoblade INT NOT NULL DEFAULT 0")
 
 
     async def cooldown(self, id, time):
@@ -309,14 +316,35 @@ class Currency(commands.Cog):
             await ctx.send(f"{ctx.author.mention} Insufficient funds, try again when you have at least 10 Quotes!")
 
     @commands.cooldown(1, 10, commands.BucketType.user)
-    @commands.command(name = 'shop', help = "See what's available in the virtual shop.")
-    async def shop(self, ctx):
-        await ctx.send("""```css
-[Shop]
+    @commands.command(name = 'shop', help = "See what's available in the virtual shop. Categories: food, fish.")
+    async def shop(self, ctx, category):
+        if category == 'food':
+            await ctx.send("""```css
+[Shop: Food]
 
-Pizza - 5 Quotes
-Sushi - 4 Quotes
+Pizza - Buy: 5 Quotes, Sell: N/A
+Sushi - Buy: 4 Quotes, Sell: N/A
 ```""")
+
+        elif category == 'fish':
+            await ctx.send("""```css
+[Shop: Fish]
+
+Catfish - Buy: N/A, Sell: 5 Quotes
+Mackerel - Buy: N/A, Sell: 6 Quotes
+Sardine - Buy: N/A, Sell: 7 Quotes
+Walleye - Buy: N/A, Sell: 7 Quotes
+Salmon - Buy: N/A, Sell: 8 Quotes
+Cod - Buy: N/A, Sell: 8 Quotes
+Tuna - Buy: N/A, Sell: 9 Quotes
+Whale - Buy: N/A, Sell: 30 Quotes
+Mermaid - Buy: N/A, Sell: 80 Quotes
+Dragon - Buy: N/A, Sell: 140 Quotes
+Kraken - Buy: N/A, Sell: 300 Quotes
+Siren - Buy: N/A, Sell: 550 Quotes
+
+```
+""")
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command(name = 'buy', help = 'Buy virtual items from the virtual shop with your Quotes.')
@@ -422,7 +450,7 @@ Sushi - 4 Quotes
                 walleye = ''
             
             if (await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0] > 0:
-                salmon = (f'\Salmon: {str((await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0])}')
+                salmon = (f'\nSalmon: {str((await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0])}')
             else:
                 salmon = ''
 
@@ -478,8 +506,8 @@ Sushi - 4 Quotes
         id = str(ctx.author.id)
         await self.check_bal(id)
         await self.check_inv(id)
-        fish_species = ['nothing', 'catfish', 'mackerel', 'sardine', 'walleye', 'salmon', 'cod', 'tuna', 'whale', 'mermaid', 'dragon', 'kraken', 'siren']
-        fish = (random.choices(fish_species, weights = (125, 100, 95, 93, 92, 90, 88, 87, 30, 15, 7, 4, 2)))[0]
+        fish_species = ['nothing', 'catfish', 'mackerel', 'sardine', 'walleye', 'salmon', 'cod', 'tuna', 'whale', 'mermaid', 'dragon', 'kraken', 'siren', 'hydra', 'technoblade', 'selkie']
+        fish = (random.choices(fish_species, weights = (200, 160, 155, 153, 152, 150, 145, 143, 40, 20, 10, 6, 4, 3, 1, 8)))[0]
         if fish != 'nothing':
             species_amount = int((await self.bot.pg_con.fetchrow(f"SELECT {fish} FROM inventory WHERE userid = $1", id))[0])
             await self.bot.pg_con.execute(f"UPDATE inventory SET {fish} = $1 WHERE userid = $2", (species_amount + 1), id)
@@ -489,12 +517,48 @@ Sushi - 4 Quotes
             await ctx.send(f"You fished up **nothing**. Better luck next time.")
     
     @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
-    async def sell(self, ctx, item):
+    async def sell(self, ctx, item, amount):
+        amount = int(amount)
         id = str(ctx.author.id)
+        bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
         await self.check_bal(id)
         await self.check_inv(id)
+        sellable_items = {
+        'catfish': 5, 
+        'mackerel': 6, 
+        'sardine': 7, 
+        'walleye': 7, 
+        'salmon': 8, 
+        'cod': 8, 
+        'tuna': 9, 
+        'whale': 30, 
+        'mermaid': 80, 
+        'dragon': 140, 
+        'kraken': 300, 
+        'siren': 500,
+        'selkie': 250,
+        'technoblade': 1000, 
+        'hydra': 700
+        }
 
+        if item in sellable_items:
+            print('yes')
+            sell_price = int(sellable_items[item])
+            item_in_inv = int((await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", id))[0])
+            print(item_in_inv)
+            print(amount)
 
-
+            if item_in_inv >= amount:
+                print('yes')
+                total = int(amount * sell_price)
+                await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
+                await self.balChange(id, total)
+                current_bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
+                await ctx.send(f"You have sold {amount} {item}, earning {total} Quote/s. You now have {current_bal} Quote/s.")
+            else:
+                await ctx.send(f"You do not have {amount} {item} in your inventory.")
+        else:
+            await ctx.send('The item that you have specified is not sellable or invalid, please check the shop using $shop [category] for more info.')
+        
 def setup(bot):
     bot.add_cog(Currency(bot))
