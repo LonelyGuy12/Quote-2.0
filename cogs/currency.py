@@ -253,7 +253,6 @@ class Currency(commands.Cog):
         elif job == 'a chef':
             wage = random.randint(28, 40)
 
-        print(wage)
         await self.balChange(id, wage)
         current_bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
         current_bal = current_bal[0]
