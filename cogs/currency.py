@@ -378,20 +378,20 @@ Hydra - Buy: N/A, Sell: 700 Quotes
             await ctx.send("""```css
 [Shop: Hunt]
 
-Boar - Buy: N/A Sell: 6 Quotes
-Goose - Buy: N/A Sell: 5 Quotes
-Python - Buy: N/A Sell: 30 Quotes
-Tiger - Buy: N/A Sell: 60 Quotes
-Dragon - Buy: N/A Sell: 140 Quotes
-Rabbit - Buy: N/A Sell: 12 Quotes
-Griffin - Buy: N/A Sell: 100 Quotes
-Manticore - Buy: N/A Sell: 800 Quotes
-Hydra - Buy: N/A Sell: 700 Quotes
-Bear - Buy: N/A Sell: 75 Quotes
-Panda - Buy: N/A Sell: 100 Quotes
-Cyclops - Buy: N/A Sell: 475 Quotes
-Fairy - Buy: N/A Sell: 130 Quotes
-Medusa - Buy: N/A Sell: 1000 Quotes
+Boar - Buy: N/A, Sell: 6 Quotes
+Goose - Buy: N/A, Sell: 5 Quotes
+Python - Buy: N/A, Sell: 30 Quotes
+Tiger - Buy: N/A, Sell: 60 Quotes
+Dragon - Buy: N/A, Sell: 140 Quotes
+Rabbit - Buy: N/A, Sell: 12 Quotes
+Griffin - Buy: N/A, Sell: 100 Quotes
+Manticore - Buy: N/A, Sell: 800 Quotes
+Hydra - Buy: N/A, Sell: 700 Quotes
+Bear - Buy: N/A, Sell: 75 Quotes
+Panda - Buy: N/A, Sell: 100 Quotes
+Cyclops - Buy: N/A, Sell: 475 Quotes
+Fairy - Buy: N/A, Sell: 130 Quotes
+Medusa - Buy: N/A, Sell: 1000 Quotes
 
 ```
 """)
