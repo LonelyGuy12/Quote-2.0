@@ -19,7 +19,7 @@ class Currency(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("ready")
+        print("Currency cog ready.")
         await self.bot.pg_con.execute("CREATE TABLE IF NOT EXISTS currency (userid TEXT NOT NULL, quotes INT)")
         await self.bot.pg_con.execute("ALTER TABLE currency ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE currency ADD COLUMN IF NOT EXISTS quotes INT")
@@ -625,6 +625,154 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Hunt]\n{boar}{goose}{python}{tiger}{dragon}{rabbit}{griffin}{manticore}{hydra}{bear}{panda}{cyclops}{fairy}{medusa}```''')
 
+        elif category == 'sellable':
+
+            if (await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0] > 0:
+                catfish = (f'\nCatfish: {str((await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                catfish = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT mackerel FROM inventory WHERE userid = $1", id))[0] > 0:
+                mackerel = (f'\nMackerel: {str((await self.bot.pg_con.fetchrow("SELECT mackerel FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                mackerel = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT sardine FROM inventory WHERE userid = $1", id))[0] > 0:
+                sardine = (f'\nSardine: {str((await self.bot.pg_con.fetchrow("SELECT sardine FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                sardine = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT walleye FROM inventory WHERE userid = $1", id))[0] > 0:
+                walleye = (f'\nWalleye: {str((await self.bot.pg_con.fetchrow("SELECT walleye FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                walleye = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0] > 0:
+                salmon = (f'\nSalmon: {str((await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                salmon = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT cod FROM inventory WHERE userid = $1", id))[0] > 0:
+                cod = (f'\nCod: {str((await self.bot.pg_con.fetchrow("SELECT cod FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                cod = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT tuna FROM inventory WHERE userid = $1", id))[0] > 0:
+                tuna = (f'\nTuna: {str((await self.bot.pg_con.fetchrow("SELECT tuna FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                tuna = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT whale FROM inventory WHERE userid = $1", id))[0] > 0:
+                whale = (f'\nWhale: {str((await self.bot.pg_con.fetchrow("SELECT whale FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                whale = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT mermaid FROM inventory WHERE userid = $1", id))[0] > 0:
+                mermaid = (f'\nMermaid: {str((await self.bot.pg_con.fetchrow("SELECT mermaid FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                mermaid = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0] > 0:
+                dragon = (f'\nDragon: {str((await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                dragon = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT kraken FROM inventory WHERE userid = $1", id))[0] > 0:
+                kraken = (f'\nKraken: {str((await self.bot.pg_con.fetchrow("SELECT kraken FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                kraken = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT siren FROM inventory WHERE userid = $1", id))[0] > 0:
+                siren = (f'\nSiren: {str((await self.bot.pg_con.fetchrow("SELECT siren FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                siren = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT hydra FROM inventory WHERE userid = $1", id))[0] > 0:
+                hydra = (f'\nHydra: {str((await self.bot.pg_con.fetchrow("SELECT hydra FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                hydra = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT selkie FROM inventory WHERE userid = $1", id))[0] > 0:
+                selkie = (f'\nSelkie: {str((await self.bot.pg_con.fetchrow("SELECT selkie FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                selkie = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT technoblade FROM inventory WHERE userid = $1", id))[0] > 0:
+                technoblade = (f'\nTechnoblade: {str((await self.bot.pg_con.fetchrow("SELECT technoblade FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                technoblade = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT boar FROM inventory WHERE userid = $1", id))[0] > 0:
+                boar = (f'\nBoar: {str((await self.bot.pg_con.fetchrow("SELECT boar FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                boar = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT goose FROM inventory WHERE userid = $1", id))[0] > 0:
+                goose = (f'\nGoose: {str((await self.bot.pg_con.fetchrow("SELECT goose FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                goose = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT python FROM inventory WHERE userid = $1", id))[0] > 0:
+                python = (f'\nPython: {str((await self.bot.pg_con.fetchrow("SELECT python FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                python = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT tiger FROM inventory WHERE userid = $1", id))[0] > 0:
+                tiger = (f'\nTiger: {str((await self.bot.pg_con.fetchrow("SELECT tiger FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                tiger = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0] > 0:
+                dragon = (f'\nDragon: {str((await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                dragon = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT rabbit FROM inventory WHERE userid = $1", id))[0] > 0:
+                rabbit = (f'\nRabbit: {str((await self.bot.pg_con.fetchrow("SELECT rabbit FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                rabbit = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT griffin FROM inventory WHERE userid = $1", id))[0] > 0:
+                griffin = (f'\nGriffin: {str((await self.bot.pg_con.fetchrow("SELECT griffin FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                griffin = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT manticore FROM inventory WHERE userid = $1", id))[0] > 0:
+                manticore = (f'\nManticore: {str((await self.bot.pg_con.fetchrow("SELECT manticore FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                manticore = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT hydra FROM inventory WHERE userid = $1", id))[0] > 0:
+                hydra = (f'\nHydra: {str((await self.bot.pg_con.fetchrow("SELECT hydra FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                hydra = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT bear FROM inventory WHERE userid = $1", id))[0] > 0:
+                bear = (f'\nBear: {str((await self.bot.pg_con.fetchrow("SELECT bear FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                bear = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT panda FROM inventory WHERE userid = $1", id))[0] > 0:
+                panda = (f'\nPanda: {str((await self.bot.pg_con.fetchrow("SELECT panda FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                panda = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT cyclops FROM inventory WHERE userid = $1", id))[0] > 0:
+                cyclops = (f'\nCyclops: {str((await self.bot.pg_con.fetchrow("SELECT cyclops FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                cyclops = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT fairy FROM inventory WHERE userid = $1", id))[0] > 0:
+                fairy = (f'\nFairy: {str((await self.bot.pg_con.fetchrow("SELECT fairy FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                fairy = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT medusa FROM inventory WHERE userid = $1", id))[0] > 0:
+                medusa = (f'\nMedusa: {str((await self.bot.pg_con.fetchrow("SELECT medusa FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                medusa = ''
+
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Sellable]\n{boar}{goose}{python}{tiger}{dragon}{rabbit}{griffin}{manticore}{hydra}{bear}{panda}{cyclops}{fairy}{medusa}{catfish}{mackerel}{sardine}{walleye}{salmon}{cod}{tuna}{whale}{mermaid}{dragon}{kraken}{siren}{hydra}{selkie}{technoblade}```''')
         else:
             await ctx.send(f"{ctx.author.mention} Please specify a valid category. Categories: fish, food, hunt.")
 
