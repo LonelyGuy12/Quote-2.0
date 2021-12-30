@@ -45,14 +45,14 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         if error.retry_after < 60:
-            await ctx.send(f"This command is on cooldown! You can use it again {round(error.retry_after, 2)} seconds.")
+            await ctx.send(f"{ctx.author.mention} This command is on cooldown! You can use it again {round(error.retry_after, 2)} seconds.")
 
         elif error.retry_after > 60 and error.retry_after < 3600:
             mins_decimals = error.retry_after/60 - math.floor(error.retry_after/60)
             mins = math.floor(error.retry_after/60)
             secs = round(mins_decimals*60, 2)
             cooldown = f'{mins} minutes, {secs} seconds'
-            await ctx.send(f"This command is on cooldown! You can use it again {cooldown}")
+            await ctx.send(f"{ctx.author.mention} This command is on cooldown! You can use it again {cooldown}")
 
         elif error.retry_after > 3600:
             hrs_decimals = error.retry_after/3600 - math.floor(error.retry_after/3600)
@@ -61,7 +61,7 @@ async def on_command_error(ctx, error):
             mins = math.floor(hrs_decimals * 3600/60)
             secs = round(mins_decimals * 60, 2)
             cooldown = f'{hrs} hours, {mins} minutes, and {secs} seconds.'
-            await ctx.send(f"This command is on cooldown! You can use it again {cooldown}")
+            await ctx.send(f"{ctx.author.mention} This command is on cooldown! You can use it again {cooldown}")
 
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Missing required argument/s. Use $help [command] to view the required arguments.")

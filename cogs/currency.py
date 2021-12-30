@@ -46,7 +46,19 @@ class Currency(commands.Cog):
         siren INT NOT NULL DEFAULT 0,
         technoblade INT NOT NULL DEFAULT 0,
         hydra INT NOT NULL DEFAULT 0,
-        selkie INT NOT NULL DEFAULT 0
+        selkie INT NOT NULL DEFAULT 0,
+        boar INT NOT NULL DEFAULT 0,
+        goose INT NOT NULL DEFAULT 0,
+        python INT NOT NULL DEFAULT 0,
+        tiger INT NOT NULL DEFAULT 0,
+        rabbit INT NOT NULL DEFAULT 0,
+        griffin INT NOT NULL DEFAULT 0,
+        manticore INT NOT NULL DEFAULT 0,
+        bear INT NOT NULL DEFAULT 0,
+        panda INT NOT NULL DEFAULT 0,
+        cyclops INT NOT NULL DEFAULT 0,
+        fairy INT NOT NULL DEFAULT 0,
+        medusa INT NOT NULL DEFAULT 0
         )""")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizza INT NOT NULL DEFAULT 0")
@@ -66,6 +78,18 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS selkie INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS hydra INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS technoblade INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS boar INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS goose INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS python INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS tiger INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS rabbit INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS griffin INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS manticore INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS bear INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS panda INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cyclops INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS fairy INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS medusa INT NOT NULL DEFAULT 0")
 
 
     async def cooldown(self, id, time):
@@ -324,7 +348,9 @@ class Currency(commands.Cog):
 
 Pizza - Buy: 5 Quotes, Sell: N/A
 Sushi - Buy: 4 Quotes, Sell: N/A
-```""")
+
+```
+""")
 
         elif category == 'fish':
             await ctx.send("""```css
@@ -345,6 +371,27 @@ Siren - Buy: N/A, Sell: 550 Quotes
 Selkie - Buy: N/A, Sell: 250 Quotes
 Technoblade - Buy: N/A, Sell: 1000 Quotes
 Hydra - Buy: N/A, Sell: 700 Quotes
+
+```
+""")
+        elif category == 'fish':
+            await ctx.send("""```css
+[Shop: Hunt]
+
+Boar - Buy: N/A Sell: 6 Quotes
+Goose - Buy: N/A Sell: 5 Quotes
+Python - Buy: N/A Sell: 30 Quotes
+Tiger - Buy: N/A Sell: 60 Quotes
+Dragon - Buy: N/A Sell: 140 Quotes
+Rabbit - Buy: N/A Sell: 12 Quotes
+Griffin - Buy: N/A Sell: 100 Quotes
+Manticore - Buy: N/A Sell: 800 Quotes
+Hydra - Buy: N/A Sell: 700 Quotes
+Bear - Buy: N/A Sell: 75 Quotes
+Panda - Buy: N/A Sell: 100 Quotes
+Cyclops - Buy: N/A Sell: 475 Quotes
+Fairy - Buy: N/A Sell: 130 Quotes
+Medusa - Buy: N/A Sell: 1000 Quotes
 
 ```
 """)
@@ -425,7 +472,7 @@ Hydra - Buy: N/A, Sell: 700 Quotes
 
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{pizza}{sushi}```''')
 
-        if category == 'fish':
+        elif category == 'fish':
 
             if (await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0] > 0:
                 catfish = (f'\nCatfish: {str((await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0])}')
@@ -504,6 +551,82 @@ Hydra - Buy: N/A, Sell: 700 Quotes
 
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Fish]\n{catfish}{mackerel}{sardine}{walleye}{salmon}{cod}{tuna}{whale}{mermaid}{dragon}{kraken}{siren}{hydra}{selkie}{technoblade}```''')
 
+        elif category == 'hunt':
+
+            if (await self.bot.pg_con.fetchrow("SELECT boar FROM inventory WHERE userid = $1", id))[0] > 0:
+                boar = (f'\nBoar: {str((await self.bot.pg_con.fetchrow("SELECT boar FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                boar = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT goose FROM inventory WHERE userid = $1", id))[0] > 0:
+                goose = (f'\nGoose: {str((await self.bot.pg_con.fetchrow("SELECT goose FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                goose = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT python FROM inventory WHERE userid = $1", id))[0] > 0:
+                python = (f'\nPython: {str((await self.bot.pg_con.fetchrow("SELECT python FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                python = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT tiger FROM inventory WHERE userid = $1", id))[0] > 0:
+                tiger = (f'\nTiger: {str((await self.bot.pg_con.fetchrow("SELECT tiger FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                tiger = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0] > 0:
+                dragon = (f'\nDragon: {str((await self.bot.pg_con.fetchrow("SELECT dragon FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                dragon = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT rabbit FROM inventory WHERE userid = $1", id))[0] > 0:
+                rabbit = (f'\nRabbit: {str((await self.bot.pg_con.fetchrow("SELECT rabbit FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                rabbit = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT griffin FROM inventory WHERE userid = $1", id))[0] > 0:
+                griffin = (f'\nGriffin: {str((await self.bot.pg_con.fetchrow("SELECT griffin FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                griffin = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT manticore FROM inventory WHERE userid = $1", id))[0] > 0:
+                manticore = (f'\nManticore: {str((await self.bot.pg_con.fetchrow("SELECT manticore FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                manticore = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT hydra FROM inventory WHERE userid = $1", id))[0] > 0:
+                hydra = (f'\nHydra: {str((await self.bot.pg_con.fetchrow("SELECT hydra FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                hydra = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT bear FROM inventory WHERE userid = $1", id))[0] > 0:
+                bear = (f'\nBear: {str((await self.bot.pg_con.fetchrow("SELECT bear FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                bear = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT panda FROM inventory WHERE userid = $1", id))[0] > 0:
+                panda = (f'\nPanda: {str((await self.bot.pg_con.fetchrow("SELECT panda FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                panda = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT cyclops FROM inventory WHERE userid = $1", id))[0] > 0:
+                cyclops = (f'\nCyclops: {str((await self.bot.pg_con.fetchrow("SELECT cyclops FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                cyclops = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT fairy FROM inventory WHERE userid = $1", id))[0] > 0:
+                fairy = (f'\nFairy: {str((await self.bot.pg_con.fetchrow("SELECT fairy FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                fairy = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT medusa FROM inventory WHERE userid = $1", id))[0] > 0:
+                medusa = (f'\nMedusa: {str((await self.bot.pg_con.fetchrow("SELECT medusa FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                medusa = ''
+
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Hunt]\n{boar}{goose}{python}{tiger}{dragon}{rabbit}{griffin}{manticore}{hydra}{bear}{panda}{cyclops}{fairy}{medusa}```''')
+
+        else:
+            await ctx.send(f"{ctx.author.mention} Please specify a valid category. Categories: fish, food.")
 
     @commands.command(name = 'top', help = 'Check who is at the top of the leaderboard.')
     async def top(self, ctx):
@@ -529,6 +652,22 @@ Hydra - Buy: N/A, Sell: 700 Quotes
         else:
             await ctx.send(f"{ctx.author.mention} You fished up **nothing**. Better luck next time.")
     
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.command(name = 'hunt', help = 'Hunt some virtual creatures to earn Quotes!')
+    async def hunt(self, ctx):
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        await self.check_inv(id)
+        hunt_species = ['nothing', 'griffin', 'boar', 'goose', 'python', 'tiger', 'dragon', 'rabbit', 'manticore', 'hydra', 'bear', 'panda', 'cyclops', 'fairy', 'medusa']
+        hunt = (random.choices(hunt_species, weights = (200, 15, 150, 165, 100, 65, 10, 135, 2, 3, 30, 15, 5, 10, 1)))[0]
+        if hunt != 'nothing':
+            species_amount = int((await self.bot.pg_con.fetchrow(f"SELECT {hunt} FROM inventory WHERE userid = $1", id))[0])
+            await self.bot.pg_con.execute(f"UPDATE inventory SET {hunt} = $1 WHERE userid = $2", (species_amount + 1), id)
+            current_species_amount = (await self.bot.pg_con.fetchrow(f"SELECT {hunt} FROM inventory WHERE userid = $1", id))[0]
+            await ctx.send(f"{ctx.author.mention} You hunted a **{hunt}**, you now have {current_species_amount} {hunt}.")
+        else:
+            await ctx.send(f"{ctx.author.mention} You found **nothing** to hunt. Better luck next time.")
+
     @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
     async def sell(self, ctx, item, amount):
         amount = int(amount)
@@ -537,6 +676,7 @@ Hydra - Buy: N/A, Sell: 700 Quotes
         await self.check_bal(id)
         await self.check_inv(id)
         sellable_items = {
+        #Fish
         'catfish': 5, 
         'mackerel': 6, 
         'sardine': 7, 
@@ -551,7 +691,23 @@ Hydra - Buy: N/A, Sell: 700 Quotes
         'siren': 500,
         'selkie': 250,
         'technoblade': 1000, 
-        'hydra': 700
+        'hydra': 700,
+
+        #Hunt
+        'boar': 6,
+        'goose': 5,
+        'python': 30,
+        'tiger': 60,
+        'dragon': 140,
+        'rabbit': 12,
+        'griffin': 100,
+        'manticore': 800,
+        'hydra': 700,
+        'bear': 75,
+        'panda': 100,
+        'cyclops': 475,
+        'fairy': 130,
+        'medusa': 1000,
         }
 
         if item.lower() in sellable_items:
