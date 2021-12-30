@@ -340,7 +340,7 @@ class Currency(commands.Cog):
             await ctx.send(f"{ctx.author.mention} Insufficient funds, try again when you have at least 10 Quotes!")
 
     @commands.cooldown(1, 10, commands.BucketType.user)
-    @commands.command(name = 'shop', help = "See what's available in the virtual shop. Categories: food, fish.")
+    @commands.command(name = 'shop', help = "See what's available in the virtual shop. Categories: food, fish, hunt.")
     async def shop(self, ctx, category):
         if category == 'food':
             await ctx.send("""```css
@@ -374,7 +374,7 @@ Hydra - Buy: N/A, Sell: 700 Quotes
 
 ```
 """)
-        elif category == 'fish':
+        elif category == 'hunt':
             await ctx.send("""```css
 [Shop: Hunt]
 
@@ -626,7 +626,7 @@ Medusa - Buy: N/A Sell: 1000 Quotes
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Hunt]\n{boar}{goose}{python}{tiger}{dragon}{rabbit}{griffin}{manticore}{hydra}{bear}{panda}{cyclops}{fairy}{medusa}```''')
 
         else:
-            await ctx.send(f"{ctx.author.mention} Please specify a valid category. Categories: fish, food.")
+            await ctx.send(f"{ctx.author.mention} Please specify a valid category. Categories: fish, food, hunt.")
 
     @commands.command(name = 'top', help = 'Check who is at the top of the leaderboard.')
     async def top(self, ctx):
