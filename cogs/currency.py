@@ -872,6 +872,19 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
                 await ctx.send(f"{ctx.author.mention} You do not have {amount} {item} in your inventory.")
         else:
             await ctx.send(f'{ctx.author.mention} The item that you have specified is not sellable or invalid, please check the shop using $shop [category] for more info.')
-        
+    
+    @commands.cooldown(1, 31536000, commands.BucketType.user)
+    @commands.command(name = "NewYear", help = "Earn Quotes by working.")
+    async def NewYear(self, ctx):
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+        bal = bal[0]
+        reward = 300
+        await self.balChange(id, reward)
+        current_bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+        current_bal = current_bal[0]
+        await ctx.send(f'{ctx.author.mention} Happy New Year! {reward} Quotes was added to your account. You now have {current_bal} Quotes.')
+
 def setup(bot):
     bot.add_cog(Currency(bot))
