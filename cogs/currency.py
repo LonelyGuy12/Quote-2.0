@@ -1,7 +1,8 @@
 import random
 import math
 import time
-from datetime import date, datetime, timedelta  
+from datetime import date, datetime, timedelta 
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -58,7 +59,13 @@ class Currency(commands.Cog):
         panda INT NOT NULL DEFAULT 0,
         cyclops INT NOT NULL DEFAULT 0,
         fairy INT NOT NULL DEFAULT 0,
-        medusa INT NOT NULL DEFAULT 0
+        medusa INT NOT NULL DEFAULT 0,
+        avocado INT NOT NULL DEFAULT 0,
+        rice INT NOT NULL DEFAULT 0,
+        seaweed INT NOT NULL DEFAULT 0,
+        sushi_kit INT NOT NULL DEFAULT 0,
+        tuna_roll INT NOT NULL DEFAULT 0,
+        salmon_roll INT NOT NULL DEFAULT 0
         )""")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizza INT NOT NULL DEFAULT 0")
@@ -90,6 +97,15 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cyclops INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS fairy INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS medusa INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sushi_kit INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS rice INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS seaweed INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS avocado INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS tuna_roll INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS salmon_roll INT NOT NULL DEFAULT 0")
+
+
+
 
 
     async def cooldown(self, id, time):
@@ -348,6 +364,9 @@ class Currency(commands.Cog):
 
 Pizza - Buy: 5 Quotes, Sell: N/A
 Sushi - Buy: 4 Quotes, Sell: N/A
+Rice - Buy: 3 Quotes, Sell: N/A
+Seaweed - Buy: 2 Quotes, Sell: N/A
+Sushi_Kit - Buy: 2 Quotes, Sell: N/A
 
 ```
 """)
@@ -411,6 +430,11 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             buyable_items = {
                 'pizza': 5,
                 'sushi': 4,
+                'avocado': 3,
+                'rice': 3,
+                'seaweed': 2,
+                'sushi_kit': 15
+
             }
 
             if amount == 1:
@@ -422,15 +446,11 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             else:
                 valid = False
 
-            print(amount)
-            print(item)
-            print(buyable_items['pizza'])
 
             if item.lower() in buyable_items and valid == True:
                 price = int(buyable_items[item])
                 total = price * amount
                 item_in_inv = int((await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", id))[0])
-                print('pass')
                 
                 if bal >= total:
                     await self.balChange(id, -total)
@@ -470,7 +490,38 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             else:
                 sushi = ''
 
-            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{pizza}{sushi}```''')
+            if (await self.bot.pg_con.fetchrow("SELECT salmon_roll FROM inventory WHERE userid = $1", id))[0] > 0:
+                salmon_roll = (f'\nSalmon Avocado Roll: {str((await self.bot.pg_con.fetchrow("SELECT salmon_roll FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                salmon_roll = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT tuna_roll FROM inventory WHERE userid = $1", id))[0] > 0:
+                tuna_roll = (f'\nTuna Avocado Roll: {str((await self.bot.pg_con.fetchrow("SELECT tuna_roll FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                tuna_roll = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0] > 0:
+                rice = (f'\nRice: {str((await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                rice = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0] > 0:
+                seaweed = (f'\nSeaweed: {str((await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                seaweed = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT avocado FROM inventory WHERE userid = $1", id))[0] > 0:
+                avocado = (f'\nAvocado: {str((await self.bot.pg_con.fetchrow("SELECT avocado FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                avocado = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT sushi_kit FROM inventory WHERE userid = $1", id))[0] > 0:
+                sushi_kit = (f'\nSushi Kit: {str((await self.bot.pg_con.fetchrow("SELECT sushi_kit FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                sushi_kit = ''
+            
+
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{pizza}{sushi}{tuna_roll}{salmon_roll}{rice}{seaweed}{avocado}{sushi_kit}```''')
 
         elif category == 'fish':
 
@@ -873,6 +924,80 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
         else:
             await ctx.send(f'{ctx.author.mention} The item that you have specified is not sellable or invalid, please check the shop using $shop [category] for more info.')
 
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    @commands.command(name = 'recipes', help = 'View food recipes to make food.')
+    async def recipes(self, ctx):
+        await ctx.send(
+"""```css
+[Sushi]
+
+Tuna Avocado Roll (3 Servings)
+* Sushi Kit
+* 1 avocado
+* Rice
+* Seaweed
+* 1 Tuna
+
+Salmon Avocado Roll (3 Servings)
+* Sushi Kit
+* 1 Avocado
+* Rice
+* Seaweed
+* 1 Salmon
+
+```""")
+
+    
+    @commands.cooldown(1, 600, commands.BucketType.user)
+    @commands.command(name = 'cook', help = 'Cook food using virtual ingredients. Use $recipes to find out what food you can make.')
+    async def cook(self, ctx, *, food):
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        await self.check_inv(id)
+        foods = {
+            'Tuna Avocado Roll',
+            'Salmon Avocado Roll'
+        }      
+
+        if food.title() in foods:
+            sushi_kits = (await self.bot.pg_con.fetchrow("SELECT sushi_kit FROM inventory WHERE userid = $1", id))[0]
+            avocados = (await self.bot.pg_con.fetchrow("SELECT avocado FROM inventory WHERE userid = $1", id))[0]
+            rice = (await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0]
+            seaweed = (await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0]
+            tuna = (await self.bot.pg_con.fetchrow("SELECT tuna FROM inventory WHERE userid = $1", id))[0]
+            salmon = (await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0]
+
+            if food.title() == 'Tuna Avocado Roll':
+                if sushi_kits >= 1 and avocados >= 1 and rice >= 1 and seaweed >= 1 and tuna >= 1:
+                    await self.bot.pg_con.execute("UPDATE inventory SET avocado = $1 WHERE userid = $2", avocados - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET rice = $1 WHERE userid = $2", rice - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET seaweed = $1 WHERE userid = $2", seaweed - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET tuna = $1 WHERE userid = $2", tuna - 1, id)
+
+                    await ctx.send(f"{ctx.author.mention} You are now making {food}. Please wait 10 minutes.")
+                    await asyncio.sleep(600)
+                    tuna_rolls = (await self.bot.pg_con.fetchrow("SELECT tuna_roll FROM inventory WHERE userid = $1", id))[0]
+                    await self.bot.pg_con.execute("UPDATE inventory SET tuna_roll = $1 WHERE userid = $2", tuna_rolls + 3, id)
+                    await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
+
+            if food.title() == 'Salmon Avocado Roll':
+                if sushi_kits >= 1 and avocados >= 1 and rice >= 1 and seaweed >= 1 and salmon >= 1:
+                    await self.bot.pg_con.execute("UPDATE inventory SET avocado = $1 WHERE userid = $2", avocados - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET rice = $1 WHERE userid = $2", rice - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET seaweed = $1 WHERE userid = $2", seaweed - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET salmon = $1 WHERE userid = $2", salmon - 1, id)
+
+                    await ctx.send(f"{ctx.author.mention} You are now making {food}. Please wait 10 minutes.")
+                    await asyncio.sleep(600)
+                    salmon_rolls = (await self.bot.pg_con.fetchrow("SELECT salmon_roll FROM inventory WHERE userid = $1", id))[0]
+                    await self.bot.pg_con.execute("UPDATE inventory SET salmon_roll = $1 WHERE userid = $2", salmon_rolls + 3, id)
+                    await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
+
+                else:
+                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish).")
+
+        else:
+            await ctx.send("The food specified is not cookable, please check recipes using $recipes. You can make a suggestion to the developer for more food recipes to be added.")
 
 def setup(bot):
     bot.add_cog(Currency(bot))
