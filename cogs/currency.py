@@ -65,7 +65,17 @@ class Currency(commands.Cog):
         seaweed INT NOT NULL DEFAULT 0,
         sushi_kit INT NOT NULL DEFAULT 0,
         tuna_roll INT NOT NULL DEFAULT 0,
-        salmon_roll INT NOT NULL DEFAULT 0
+        salmon_roll INT NOT NULL DEFAULT 0,
+        cocoa_beans INT NOT NULL DEFAULT 0,
+        milk INT NOT NULL DEFAULT 0,
+        sugar INT NOT NULL DEFAULT 0,
+        cocoa_butter INT NOT NULL DEFAULT 0,
+        soy_lecithin INT NOT NULL DEFAULT 0,
+        vegetable_oil INT NOT NULL DEFAULT 0,
+        vanilla INT NOT NULL DEFAULT 0,
+        chocolate_kit INT NOT NULL DEFAULT 0,
+        milk_chocolate INT NOT NULL DEFAULT 0,
+        dark_chocolate INT NOT NULL DEFAULT 0
         )""")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizza INT NOT NULL DEFAULT 0")
@@ -103,9 +113,16 @@ class Currency(commands.Cog):
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS avocado INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS tuna_roll INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS salmon_roll INT NOT NULL DEFAULT 0")
-
-
-
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS milk INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cocoa_beans INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sugar INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cocoa_butter INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS soy_lecithin INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS vegetable_oil INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS vanilla INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS chocolate_kit INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS milk_chocolate INT NOT NULL DEFAULT 0")
+        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS dark_chocolate INT NOT NULL DEFAULT 0")
 
 
     async def cooldown(self, id, time):
@@ -356,7 +373,7 @@ class Currency(commands.Cog):
             await ctx.send(f"{ctx.author.mention} Insufficient funds, try again when you have at least 10 Quotes!")
 
     @commands.cooldown(1, 10, commands.BucketType.user)
-    @commands.command(name = 'shop', help = "See what's available in the virtual shop. Categories: food, fish, hunt.")
+    @commands.command(name = 'shop', help = "See what's available in the virtual shop. Categories: food, ingredients, fish, hunt.")
     async def shop(self, ctx, category):
         if category == 'food':
             await ctx.send("""```css
@@ -364,9 +381,25 @@ class Currency(commands.Cog):
 
 Pizza - Buy: 5 Quotes, Sell: N/A
 Sushi - Buy: 4 Quotes, Sell: N/A
+
+```
+""")
+
+        elif category == 'ingredients':
+            await ctx.send("""```css
+[Shop: Ingredients]
+
 Rice - Buy: 3 Quotes, Sell: N/A
 Seaweed - Buy: 2 Quotes, Sell: N/A
 Sushi_Kit - Buy: 2 Quotes, Sell: N/A
+Cocoa_Beans - Buy: 4 Quotes, Sell: N/A
+Milk - Buy: 3 Quotes, Sell: N/A
+Sugar - Buy: 2 Quotes, Sell: N/A
+Cocoa_Butter - Buy: 3 Quotes, Sell: N/A
+Soy_Lecithin - Buy: 3 Quotes, Sell: N/A
+Vegetable_Oil - Buy: 5 Quotes, Sell: N/A
+Vanilla - Buy: 6 Quotes, Sell: N/A
+Chocolate_Kit - Buy: 15 Quotes, Sell: N/A
 
 ```
 """)
@@ -433,7 +466,15 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
                 'avocado': 3,
                 'rice': 3,
                 'seaweed': 2,
-                'sushi_kit': 15
+                'sushi_kit': 15,
+                'cocoa_beans': 4,
+                'milk': 3,
+                'sugar': 2,
+                'cocoa_butter': 3,
+                'soy_lecithin': 3,
+                'vegetable_oil': 5,
+                'vanilla': 6,
+                'chocolate_kit': 15
 
             }
 
@@ -500,28 +541,17 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             else:
                 tuna_roll = ''
             
-            if (await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0] > 0:
-                rice = (f'\nRice: {str((await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0])}')
+            if (await self.bot.pg_con.fetchrow("SELECT milk_chocolate FROM inventory WHERE userid = $1", id))[0] > 0:
+                milk_chocolate = (f'\nMilk Chocolate: {str((await self.bot.pg_con.fetchrow("SELECT milk_chocolate FROM inventory WHERE userid = $1", id))[0])}')
             else:
-                rice = ''
+                milk_chocolate = ''
 
-            if (await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0] > 0:
-                seaweed = (f'\nSeaweed: {str((await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0])}')
+            if (await self.bot.pg_con.fetchrow("SELECT dark_chocolate FROM inventory WHERE userid = $1", id))[0] > 0:
+                dark_chocolate = (f'\nDark Chocolate: {str((await self.bot.pg_con.fetchrow("SELECT dark_chocolate FROM inventory WHERE userid = $1", id))[0])}')
             else:
-                seaweed = ''
+                dark_chocolate = ''
             
-            if (await self.bot.pg_con.fetchrow("SELECT avocado FROM inventory WHERE userid = $1", id))[0] > 0:
-                avocado = (f'\nAvocado: {str((await self.bot.pg_con.fetchrow("SELECT avocado FROM inventory WHERE userid = $1", id))[0])}')
-            else:
-                avocado = ''
-
-            if (await self.bot.pg_con.fetchrow("SELECT sushi_kit FROM inventory WHERE userid = $1", id))[0] > 0:
-                sushi_kit = (f'\nSushi Kit: {str((await self.bot.pg_con.fetchrow("SELECT sushi_kit FROM inventory WHERE userid = $1", id))[0])}')
-            else:
-                sushi_kit = ''
-            
-
-            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{pizza}{sushi}{tuna_roll}{salmon_roll}{rice}{seaweed}{avocado}{sushi_kit}```''')
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{pizza}{sushi}{tuna_roll}{salmon_roll}{dark_chocolate}{milk_chocolate}```''')
 
         elif category == 'fish':
 
@@ -675,6 +705,70 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
                 medusa = ''
 
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Hunt]\n{boar}{goose}{python}{tiger}{dragon}{rabbit}{griffin}{manticore}{hydra}{bear}{panda}{cyclops}{fairy}{medusa}```''')
+        
+        elif category == 'ingredients':
+
+            if (await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0] > 0:
+                rice = (f'\nRice: {str((await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                rice = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0] > 0:
+                seaweed = (f'\nSeaweed: {str((await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                seaweed = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT avocado FROM inventory WHERE userid = $1", id))[0] > 0:
+                avocado = (f'\nAvocado: {str((await self.bot.pg_con.fetchrow("SELECT avocado FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                avocado = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT sushi_kit FROM inventory WHERE userid = $1", id))[0] > 0:
+                sushi_kit = (f'\nSushi Kit: {str((await self.bot.pg_con.fetchrow("SELECT sushi_kit FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                sushi_kit = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT cocoa_beans FROM inventory WHERE userid = $1", id))[0] > 0:
+                cocoa_beans = (f'\nCocoa Beans: {str((await self.bot.pg_con.fetchrow("SELECT cocoa_beans FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                cocoa_beans = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT milk FROM inventory WHERE userid = $1", id))[0] > 0:
+                milk = (f'\nMilk: {str((await self.bot.pg_con.fetchrow("SELECT milk FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                milk = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT sugar FROM inventory WHERE userid = $1", id))[0] > 0:
+                sugar = (f'\nSugar: {str((await self.bot.pg_con.fetchrow("SELECT sugar FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                sugar = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT cocoa_butter FROM inventory WHERE userid = $1", id))[0] > 0:
+                cocoa_butter = (f'\nCocoa Butter: {str((await self.bot.pg_con.fetchrow("SELECT cocoa_butter FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                cocoa_butter = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT soy_lecithin FROM inventory WHERE userid = $1", id))[0] > 0:
+                soy_lecithin = (f'\nSoy Lecithin: {str((await self.bot.pg_con.fetchrow("SELECT soy_lecithin FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                soy_lecithin = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT vegetable_oil FROM inventory WHERE userid = $1", id))[0] > 0:
+                vegetable_oil = (f'\nVegetable Oil: {str((await self.bot.pg_con.fetchrow("SELECT vegetable_oil FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                vegetable_oil = ''
+            
+            if (await self.bot.pg_con.fetchrow("SELECT vanilla FROM inventory WHERE userid = $1", id))[0] > 0:
+                vanilla = (f'\nVanilla: {str((await self.bot.pg_con.fetchrow("SELECT vanilla FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                vanilla = ''
+
+            if (await self.bot.pg_con.fetchrow("SELECT chocolate_kit FROM inventory WHERE userid = $1", id))[0] > 0:
+                chocolate_kit = (f'\nChocolate Kit: {str((await self.bot.pg_con.fetchrow("SELECT chocolate FROM inventory WHERE userid = $1", id))[0])}')
+            else:
+                chocolate_kit = ''
+
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Ingredients]\n{rice}{seaweed}{avocado}{sushi_kit}{cocoa_beans}{milk}{sugar}{cocoa_butter}{soy_lecithin}{vegetable_oil}{vanilla}{chocolate_kit}```''')
 
         elif category == 'sellable':
 
@@ -945,6 +1039,27 @@ Salmon Avocado Roll (3 Servings)
 * Seaweed
 * 1 Salmon
 
+[Desserts]
+
+Milk Chocolate (5 Bars)
+* Cocoa beans
+* Milk
+* Sugar
+* Cocoa Butter
+* Soy Lecithin (Emulsifier)
+* Vegetable Oil
+* Vanilla
+* Chocolate Kit
+
+Dark Chocolate (5 Bars)
+* Cocoa beans
+* Sugar
+* Cocoa Butter
+* Soy Lecithin (Emulsifier)
+* Vegetable Oil
+* Vanilla
+* Chocolate Kit
+
 ```""")
 
     
@@ -956,7 +1071,9 @@ Salmon Avocado Roll (3 Servings)
         await self.check_inv(id)
         foods = {
             'Tuna Avocado Roll',
-            'Salmon Avocado Roll'
+            'Salmon Avocado Roll',
+            'Milk Chocolate',
+            'Dark Chocolate'
         }      
 
         if food.title() in foods:
@@ -966,6 +1083,14 @@ Salmon Avocado Roll (3 Servings)
             seaweed = (await self.bot.pg_con.fetchrow("SELECT seaweed FROM inventory WHERE userid = $1", id))[0]
             tuna = (await self.bot.pg_con.fetchrow("SELECT tuna FROM inventory WHERE userid = $1", id))[0]
             salmon = (await self.bot.pg_con.fetchrow("SELECT salmon FROM inventory WHERE userid = $1", id))[0]
+            cocoa_beans = (await self.bot.pg_con.fetchrow("SELECT cocoa_beans FROM inventory WHERE userid = $1", id))[0]
+            milk = (await self.bot.pg_con.fetchrow("SELECT milk FROM inventory WHERE userid = $1", id))[0]
+            sugar = (await self.bot.pg_con.fetchrow("SELECT sugar FROM inventory WHERE userid = $1", id))[0]
+            cocoa_butter = (await self.bot.pg_con.fetchrow("SELECT cocoa_butter FROM inventory WHERE userid = $1", id))[0]
+            soy_lecithin = (await self.bot.pg_con.fetchrow("SELECT soy_lecithin FROM inventory WHERE userid = $1", id))[0]
+            vegetable_oil = (await self.bot.pg_con.fetchrow("SELECT vegetable_oil FROM inventory WHERE userid = $1", id))[0]
+            vanilla = (await self.bot.pg_con.fetchrow("SELECT vanilla FROM inventory WHERE userid = $1", id))[0]
+            chocolate_kit = (await self.bot.pg_con.fetchrow("SELECT chocolate_kit FROM inventory WHERE userid = $1", id))[0]
 
             if food.title() == 'Tuna Avocado Roll':
                 if sushi_kits >= 1 and avocados >= 1 and rice >= 1 and seaweed >= 1 and tuna >= 1:
@@ -980,7 +1105,10 @@ Salmon Avocado Roll (3 Servings)
                     await self.bot.pg_con.execute("UPDATE inventory SET tuna_roll = $1 WHERE userid = $2", tuna_rolls + 3, id)
                     await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
 
-            if food.title() == 'Salmon Avocado Roll':
+                else:
+                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish) or hunt ($hunt).")
+
+            elif food.title() == 'Salmon Avocado Roll':
                 if sushi_kits >= 1 and avocados >= 1 and rice >= 1 and seaweed >= 1 and salmon >= 1:
                     await self.bot.pg_con.execute("UPDATE inventory SET avocado = $1 WHERE userid = $2", avocados - 1, id)
                     await self.bot.pg_con.execute("UPDATE inventory SET rice = $1 WHERE userid = $2", rice - 1, id)
@@ -994,10 +1122,46 @@ Salmon Avocado Roll (3 Servings)
                     await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
 
                 else:
-                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish).")
+                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish) or hunt ($hunt).")
 
+            elif food.title() == 'Milk Chocolate':
+                if chocolate_kit >= 1 and cocoa_beans >= 1 and milk >= 1 and sugar >= 1 and cocoa_butter >= 1 and soy_lecithin >= 1 and vegetable_oil >= 1 and vanilla >= 1:
+                    await self.bot.pg_con.execute("UPDATE inventory SET cocoa_beans = $1 WHERE userid = $2", cocoa_beans - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET milk = $1 WHERE userid = $2", milk - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET sugar = $1 WHERE userid = $2", sugar - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET cocoa_butter = $1 WHERE userid = $2", cocoa_butter - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET soy_lecithin = $1 WHERE userid = $2", soy_lecithin - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET vegetable_oil = $1 WHERE userid = $2", vegetable_oil - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET vanilla = $1 WHERE userid = $2", vanilla - 1, id)
+
+                    await ctx.send(f"{ctx.author.mention} You are now making {food}. Please wait 10 minutes.")
+                    await asyncio.sleep(600)
+                    milk_chocolate = (await self.bot.pg_con.fetchrow("SELECT milk_chocolate FROM inventory WHERE userid = $1", id))[0]
+                    await self.bot.pg_con.execute("UPDATE inventory SET milk_chocolate = $1 WHERE userid = $2", milk_chocolate + 5, id)
+                    await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
+
+                else:
+                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish) or hunt ($hunt).")
+
+            elif food.title() == 'Dark Chocolate':
+                if chocolate_kit >= 1 and cocoa_beans >= 1 and sugar >= 1 and cocoa_butter >= 1 and soy_lecithin >= 1 and vegetable_oil >= 1 and vanilla >= 1:
+                    await self.bot.pg_con.execute("UPDATE inventory SET cocoa_beans = $1 WHERE userid = $2", cocoa_beans - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET sugar = $1 WHERE userid = $2", sugar - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET cocoa_butter = $1 WHERE userid = $2", cocoa_butter - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET soy_lecithin = $1 WHERE userid = $2", soy_lecithin - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET vegetable_oil = $1 WHERE userid = $2", vegetable_oil - 1, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET vanilla = $1 WHERE userid = $2", vanilla - 1, id)
+
+                    await ctx.send(f"{ctx.author.mention} You are now making {food}. Please wait 10 minutes.")
+                    await asyncio.sleep(600)
+                    dark_chocolate = (await self.bot.pg_con.fetchrow("SELECT dark_chocolate FROM inventory WHERE userid = $1", id))[0]
+                    await self.bot.pg_con.execute("UPDATE inventory SET dark_chocolate = $1 WHERE userid = $2", dark_chocolate + 5, id)
+                    await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
+
+                else:
+                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish) or hunt ($hunt).")    
         else:
-            await ctx.send("The food specified is not cookable, please check recipes using $recipes. You can make a suggestion to the developer for more food recipes to be added.")
+            await ctx.send(f"{ctx.author.mention} The food specified is not cookable, please check recipes using $recipes. You can make a suggestion to the developer for more food recipes to be added.")
 
 def setup(bot):
     bot.add_cog(Currency(bot))
