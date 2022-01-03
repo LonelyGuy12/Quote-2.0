@@ -375,7 +375,10 @@ class Currency(commands.Cog):
             await ctx.send("""```css
 [Shop: Food]
 
-
+Tuna Roll - Buy: 10 Quotes, Sell: 6 Quotes 
+Salmon Roll - Buy: 11 Quotes, Sell: 7 Quotes
+Milk Chocolate - Buy: 14 Quotes, Sell: 9 Quotes
+Dark Chocolate - Buy: 13 Quotes, Sell: 8 Quotes
 
 ```
 """)
@@ -385,6 +388,7 @@ class Currency(commands.Cog):
 [Shop: Ingredients]
 
 Rice - Buy: 3 Quotes, Sell: N/A
+Avocado - Buy: 3 Quotes, Sell: N/A
 Seaweed - Buy: 2 Quotes, Sell: N/A
 Sushi_Kit - Buy: 2 Quotes, Sell: N/A
 Cocoa_Beans - Buy: 4 Quotes, Sell: N/A
@@ -407,7 +411,7 @@ Catfish - Buy: N/A, Sell: 5 Quotes
 Mackerel - Buy: N/A, Sell: 6 Quotes
 Sardine - Buy: N/A, Sell: 7 Quotes
 Walleye - Buy: N/A, Sell: 7 Quotes
-Salmon - Buy: N/A, Sell: 8 Quotes
+Salmon - Buy: N/A, Sell: 9 Quotes
 Cod - Buy: N/A, Sell: 8 Quotes
 Tuna - Buy: N/A, Sell: 9 Quotes
 Whale - Buy: N/A, Sell: 30 Quotes
@@ -451,7 +455,7 @@ Catfish - Buy: N/A, Sell: 5 Quotes
 Mackerel - Buy: N/A, Sell: 6 Quotes
 Sardine - Buy: N/A, Sell: 7 Quotes
 Walleye - Buy: N/A, Sell: 7 Quotes
-Salmon - Buy: N/A, Sell: 8 Quotes
+Salmon - Buy: N/A, Sell: 9 Quotes
 Cod - Buy: N/A, Sell: 8 Quotes
 Tuna - Buy: N/A, Sell: 9 Quotes
 Whale - Buy: N/A, Sell: 30 Quotes
@@ -481,7 +485,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 """)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @commands.command(name = 'buy', help = 'Buy virtual items from the virtual shop with your Quotes.')
+    @commands.command(name = 'buy', help = 'Buy virtual items from the virtual shop with your Quotes. NOTE: when buying items, please seperate words with underscores instead of spaces. (e.g. $buy tuna_roll 1)')
     async def buy(self, ctx, item, amount):
         try:
             amount = int(amount)
@@ -504,7 +508,11 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
                 'soy_lecithin': 3,
                 'vegetable_oil': 5,
                 'vanilla': 6,
-                'chocolate_kit': 15
+                'chocolate_kit': 15,
+                'milk_chocolate': 14,
+                'dark_chocolate': 13,
+                'tuna_roll': 10,
+                'salmon_roll': 11,
 
             }
 
@@ -996,7 +1004,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
         'mackerel': 6, 
         'sardine': 7, 
         'walleye': 7, 
-        'salmon': 8, 
+        'salmon': 9, 
         'cod': 8, 
         'tuna': 9, 
         'whale': 30, 
@@ -1023,6 +1031,13 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
         'cyclops': 475,
         'fairy': 130,
         'medusa': 1000,
+
+        #Food
+        'tuna_roll': 6,
+        'salmon_roll': 7,
+        'milk_chocolate': 9,
+        'dark_chocolate': 8,
+
         }
 
         if item in sellable_items:
@@ -1047,14 +1062,14 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 """```css
 [Sushi]
 
-Tuna Avocado Roll (3 Servings)
+Tuna Avocado Roll (5 Servings)
 * Sushi Kit
 * 1 Avocado
 * Rice
 * Seaweed
 * 1 Tuna
 
-Salmon Avocado Roll (3 Servings)
+Salmon Avocado Roll (5 Servings)
 * Sushi Kit
 * 1 Avocado
 * Rice
@@ -1124,7 +1139,7 @@ Dark Chocolate (5 Bars)
                     await ctx.send(f"{ctx.author.mention} You are now making {food}. Please wait 10 minutes.")
                     await asyncio.sleep(600)
                     tuna_rolls = (await self.bot.pg_con.fetchrow("SELECT tuna_roll FROM inventory WHERE userid = $1", id))[0]
-                    await self.bot.pg_con.execute("UPDATE inventory SET tuna_roll = $1 WHERE userid = $2", tuna_rolls + 3, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET tuna_roll = $1 WHERE userid = $2", tuna_rolls + 5, id)
                     await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
 
                 else:
@@ -1140,7 +1155,7 @@ Dark Chocolate (5 Bars)
                     await ctx.send(f"{ctx.author.mention} You are now making {food}. Please wait 10 minutes.")
                     await asyncio.sleep(600)
                     salmon_rolls = (await self.bot.pg_con.fetchrow("SELECT salmon_roll FROM inventory WHERE userid = $1", id))[0]
-                    await self.bot.pg_con.execute("UPDATE inventory SET salmon_roll = $1 WHERE userid = $2", salmon_rolls + 3, id)
+                    await self.bot.pg_con.execute("UPDATE inventory SET salmon_roll = $1 WHERE userid = $2", salmon_rolls + 5, id)
                     await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
 
                 else:
