@@ -31,8 +31,6 @@ class Currency(commands.Cog):
 
         await self.bot.pg_con.execute("""CREATE TABLE IF NOT EXISTS inventory 
         (userid TEXT NOT NULL, 
-        pizza INT NOT NULL DEFAULT 0, 
-        sushi INT NOT NULL DEFAULT 0, 
         catfish INT NOT NULL DEFAULT 0, 
         mackerel INT NOT NULL DEFAULT 0, 
         sardine INT NOT NULL DEFAULT 0, 
@@ -78,8 +76,6 @@ class Currency(commands.Cog):
         dark_chocolate INT NOT NULL DEFAULT 0
         )""")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS userid TEXT NOT NULL")
-        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS pizza INT NOT NULL DEFAULT 0")
-        await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sushi INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS catfish INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS mackerel INT NOT NULL DEFAULT 0")
         await self.bot.pg_con.execute("ALTER TABLE inventory ADD COLUMN IF NOT EXISTS sardine INT NOT NULL DEFAULT 0")
@@ -350,7 +346,7 @@ class Currency(commands.Cog):
             chance = random.randrange(0,100)
             if (chance < 85):
                 fine = random.randrange(90,98)
-                await ctx.send(f"{ctx.author.mention} Your {random.choice(scams)} scam was discoverd because {random.choice(reasons_scam)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {round((float(fine) / 100) * bal)} Quote/s.")
+                await ctx.send(f"{ctx.author.mention} Your {random.choice(scams)} scam was discovered because {random.choice(reasons_scam)}! You were fined {round((100 - fine)/100 * bal)} Quote/s ({100 - fine}% of your Quotes).\nYou now have {round((float(fine) / 100) * bal)} Quote/s.")
                 await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", (float(fine) / 100) * bal, id)
             if (chance >= 85):
                 reward = random.randrange(120, 200)
@@ -373,19 +369,18 @@ class Currency(commands.Cog):
             await ctx.send(f"{ctx.author.mention} Insufficient funds, try again when you have at least 10 Quotes!")
 
     @commands.cooldown(1, 10, commands.BucketType.user)
-    @commands.command(name = 'shop', help = "See what's available in the virtual shop. Categories: food, ingredients, fish, hunt.")
+    @commands.command(name = 'shop', help = "See what's available in the virtual shop. Categories: food, ingredients, fish, hunt, sellable.")
     async def shop(self, ctx, category):
-        if category == 'food':
+        if category.lower() == 'food':
             await ctx.send("""```css
 [Shop: Food]
 
-Pizza - Buy: 5 Quotes, Sell: N/A
-Sushi - Buy: 4 Quotes, Sell: N/A
+
 
 ```
 """)
 
-        elif category == 'ingredients':
+        elif category.lower() == 'ingredients':
             await ctx.send("""```css
 [Shop: Ingredients]
 
@@ -404,7 +399,7 @@ Chocolate_Kit - Buy: 15 Quotes, Sell: N/A
 ```
 """)
 
-        elif category == 'fish':
+        elif category.lower() == 'fish':
             await ctx.send("""```css
 [Shop: Fish]
 
@@ -426,10 +421,47 @@ Hydra - Buy: N/A, Sell: 700 Quotes
 
 ```
 """)
-        elif category == 'hunt':
+        elif category.lower() == 'hunt':
             await ctx.send("""```css
 [Shop: Hunt]
 
+Boar - Buy: N/A, Sell: 6 Quotes
+Goose - Buy: N/A, Sell: 5 Quotes
+Python - Buy: N/A, Sell: 30 Quotes
+Tiger - Buy: N/A, Sell: 60 Quotes
+Dragon - Buy: N/A, Sell: 140 Quotes
+Rabbit - Buy: N/A, Sell: 12 Quotes
+Griffin - Buy: N/A, Sell: 100 Quotes
+Manticore - Buy: N/A, Sell: 800 Quotes
+Hydra - Buy: N/A, Sell: 700 Quotes
+Bear - Buy: N/A, Sell: 75 Quotes
+Panda - Buy: N/A, Sell: 100 Quotes
+Cyclops - Buy: N/A, Sell: 475 Quotes
+Fairy - Buy: N/A, Sell: 130 Quotes
+Medusa - Buy: N/A, Sell: 1000 Quotes
+
+```
+""")
+
+        elif category.lower() == 'sellable':
+            await ctx.send("""```css
+[Shop: Sellable]
+
+Catfish - Buy: N/A, Sell: 5 Quotes
+Mackerel - Buy: N/A, Sell: 6 Quotes
+Sardine - Buy: N/A, Sell: 7 Quotes
+Walleye - Buy: N/A, Sell: 7 Quotes
+Salmon - Buy: N/A, Sell: 8 Quotes
+Cod - Buy: N/A, Sell: 8 Quotes
+Tuna - Buy: N/A, Sell: 9 Quotes
+Whale - Buy: N/A, Sell: 30 Quotes
+Mermaid - Buy: N/A, Sell: 80 Quotes
+Dragon - Buy: N/A, Sell: 140 Quotes
+Kraken - Buy: N/A, Sell: 300 Quotes
+Siren - Buy: N/A, Sell: 550 Quotes
+Selkie - Buy: N/A, Sell: 250 Quotes
+Technoblade - Buy: N/A, Sell: 1000 Quotes
+Hydra - Buy: N/A, Sell: 700 Quotes
 Boar - Buy: N/A, Sell: 6 Quotes
 Goose - Buy: N/A, Sell: 5 Quotes
 Python - Buy: N/A, Sell: 30 Quotes
@@ -454,15 +486,13 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
         try:
             amount = int(amount)
             id = str(ctx.author.id)
-            item = str(item)
+            item = str(item.lower())    
 
             await self.check_bal(id)
             await self.check_inv(id)
             bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
 
             buyable_items = {
-                'pizza': 5,
-                'sushi': 4,
                 'avocado': 3,
                 'rice': 3,
                 'seaweed': 2,
@@ -488,7 +518,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
                 valid = False
 
 
-            if item.lower() in buyable_items and valid == True:
+            if item in buyable_items and valid == True:
                 price = int(buyable_items[item])
                 total = price * amount
                 item_in_inv = int((await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", id))[0])
@@ -514,22 +544,13 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             await ctx.send(f"{ctx.author.mention} Error, check the command usage using `$help [command]`.")
             
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @commands.command(name = 'inventory' and 'inv', help = 'Checks your for items that you have purchased. Categories are: food, fish.')
+    @commands.command(name = 'inventory' and 'inv', help = 'Checks your for items that you have purchased. Categories are: food, ingredients, sellable, hunt, fish.')
     async def inventory(self, ctx, category):
         id = str(ctx.author.id)
         await self.check_bal(id)
         await self.check_inv(id)
 
-        if category == 'food':
-            if  (await self.bot.pg_con.fetchrow("SELECT pizza FROM inventory WHERE userid = $1", id))[0] > 0:
-                pizza = (f'\nPizza: {str((await self.bot.pg_con.fetchrow("SELECT pizza FROM inventory WHERE userid = $1", id))[0])}')
-            else:
-                pizza = ''
-
-            if (await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id))[0] > 0:
-                sushi = (f'\nSushi: {str((await self.bot.pg_con.fetchrow("SELECT sushi FROM inventory WHERE userid = $1", id))[0])}')
-            else:
-                sushi = ''
+        if category.lower() == 'food':
 
             if (await self.bot.pg_con.fetchrow("SELECT salmon_roll FROM inventory WHERE userid = $1", id))[0] > 0:
                 salmon_roll = (f'\nSalmon Avocado Roll: {str((await self.bot.pg_con.fetchrow("SELECT salmon_roll FROM inventory WHERE userid = $1", id))[0])}')
@@ -551,9 +572,9 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             else:
                 dark_chocolate = ''
             
-            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{pizza}{sushi}{tuna_roll}{salmon_roll}{dark_chocolate}{milk_chocolate}```''')
+            await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Food]\n{tuna_roll}{salmon_roll}{dark_chocolate}{milk_chocolate}```''')
 
-        elif category == 'fish':
+        elif category.lower() == 'fish':
 
             if (await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0] > 0:
                 catfish = (f'\nCatfish: {str((await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0])}')
@@ -632,7 +653,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Fish]\n{catfish}{mackerel}{sardine}{walleye}{salmon}{cod}{tuna}{whale}{mermaid}{dragon}{kraken}{siren}{hydra}{selkie}{technoblade}```''')
 
-        elif category == 'hunt':
+        elif category.lower() == 'hunt':
 
             if (await self.bot.pg_con.fetchrow("SELECT boar FROM inventory WHERE userid = $1", id))[0] > 0:
                 boar = (f'\nBoar: {str((await self.bot.pg_con.fetchrow("SELECT boar FROM inventory WHERE userid = $1", id))[0])}')
@@ -706,7 +727,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Hunt]\n{boar}{goose}{python}{tiger}{dragon}{rabbit}{griffin}{manticore}{hydra}{bear}{panda}{cyclops}{fairy}{medusa}```''')
         
-        elif category == 'ingredients':
+        elif category.lower() == 'ingredients':
 
             if (await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0] > 0:
                 rice = (f'\nRice: {str((await self.bot.pg_con.fetchrow("SELECT rice FROM inventory WHERE userid = $1", id))[0])}')
@@ -764,13 +785,13 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
                 vanilla = ''
 
             if (await self.bot.pg_con.fetchrow("SELECT chocolate_kit FROM inventory WHERE userid = $1", id))[0] > 0:
-                chocolate_kit = (f'\nChocolate Kit: {str((await self.bot.pg_con.fetchrow("SELECT chocolate FROM inventory WHERE userid = $1", id))[0])}')
+                chocolate_kit = (f'\nChocolate Kit: {str((await self.bot.pg_con.fetchrow("SELECT chocolate_kit FROM inventory WHERE userid = $1", id))[0])}')
             else:
                 chocolate_kit = ''
 
             await ctx.send(f'''{ctx.author.mention}```css\n[Inventory: Ingredients]\n{rice}{seaweed}{avocado}{sushi_kit}{cocoa_beans}{milk}{sugar}{cocoa_butter}{soy_lecithin}{vegetable_oil}{vanilla}{chocolate_kit}```''')
 
-        elif category == 'sellable':
+        elif category.lower() == 'sellable':
 
             if (await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0] > 0:
                 catfish = (f'\nCatfish: {str((await self.bot.pg_con.fetchrow("SELECT catfish FROM inventory WHERE userid = $1", id))[0])}')
@@ -963,6 +984,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 
     @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
     async def sell(self, ctx, item, amount):
+        item = item.lower()
         amount = int(amount)
         id = str(ctx.author.id)
         bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
@@ -1003,7 +1025,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
         'medusa': 1000,
         }
 
-        if item.lower() in sellable_items:
+        if item in sellable_items:
             sell_price = int(sellable_items[item])
             item_in_inv = int((await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", id))[0])
 
@@ -1027,7 +1049,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 
 Tuna Avocado Roll (3 Servings)
 * Sushi Kit
-* 1 avocado
+* 1 Avocado
 * Rice
 * Seaweed
 * 1 Tuna
@@ -1106,7 +1128,7 @@ Dark Chocolate (5 Bars)
                     await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
 
                 else:
-                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish) or hunt ($hunt).")
+                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop ingredients to buy ingredients and/or catch some fish ($fish) or hunt ($hunt).")
 
             elif food.title() == 'Salmon Avocado Roll':
                 if sushi_kits >= 1 and avocados >= 1 and rice >= 1 and seaweed >= 1 and salmon >= 1:
@@ -1122,7 +1144,7 @@ Dark Chocolate (5 Bars)
                     await ctx.send(f"{ctx.author.mention} Your {food} is now ready.")
 
                 else:
-                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish) or hunt ($hunt).")
+                    await ctx.send(f"{ctx.author.mention} You do not have all required ingredients, use $shop food to buy ingredients and/or catch some fish ($fish) or hunt ($hunt). Note: when buying ingredients, seperate words with underscore in between, not space, however, you can use space for $cook.")
 
             elif food.title() == 'Milk Chocolate':
                 if chocolate_kit >= 1 and cocoa_beans >= 1 and milk >= 1 and sugar >= 1 and cocoa_butter >= 1 and soy_lecithin >= 1 and vegetable_oil >= 1 and vanilla >= 1:
