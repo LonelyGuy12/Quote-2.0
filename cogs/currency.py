@@ -1200,6 +1200,7 @@ Dark Chocolate (5 Bars)
         else:
             await ctx.send(f"{ctx.author.mention} The food specified is not cookable, please check recipes using $recipes. You can make a suggestion to the developer for more food recipes to be added.")
 
+    @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(name = 'p_sell', help = 'Sell your items to other users for Quotes.')
     async def p_sell(self, ctx, user, item, amount, quotes):
         try:
