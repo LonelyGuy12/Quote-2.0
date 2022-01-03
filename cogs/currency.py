@@ -1200,5 +1200,119 @@ Dark Chocolate (5 Bars)
         else:
             await ctx.send(f"{ctx.author.mention} The food specified is not cookable, please check recipes using $recipes. You can make a suggestion to the developer for more food recipes to be added.")
 
+    @commands.command(name = 'p_sell', help = 'Sell your items to other users for Quotes.')
+    async def p_sell(self, ctx, user, item, amount, quotes):
+        try:
+            amount = int(amount)
+        except ValueError:
+            await ctx.send("Amount of items needs to be an integer!")
+
+        try:
+            quotes = int(quotes)
+        except ValueError:
+            await ctx.send("Amount of Quotes needs to be an integer!")
+        
+        item = item.lower()
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        await self.check_inv(id)
+
+        sellable_items = {
+            'tuna_roll',
+            'salmon_roll',
+            'milk_chocolate',
+            'dark_chocolate',
+            'rice',
+            'avocado',
+            'seaweed',
+            'sushi_kit',
+            'cocoa_beans',
+            'milk',
+            'sugar',
+            'cocoa_butter',
+            'soy_lecithin',
+            'vegetable_oil',
+            'vanilla',
+            'chocolate_kit',
+            'catfish',
+            'mackerel',
+            'sardine',
+            'walleye',
+            'salmon',
+            'cod',
+            'tuna',
+            'whale',
+            'mermaid',
+            'dragon',
+            'kraken',
+            'siren',
+            'selkie',
+            'technoblade',
+            'hydra',
+            'boar',
+            'goose',
+            'python',
+            'tiger',
+            'rabbit',
+            'griffin',
+            'manticore',
+            'bear',
+            'panda',
+            'cyclops',
+            'fairy',
+            'medusa',
+        }
+
+        if user.startswith("<@") and user.endswith(">"):
+            if "<@!" in user:
+                user = (user.removeprefix(str("<@!"))).removesuffix(str(">"))
+
+            else:
+                user = (user.removeprefix(str("<@"))).removesuffix(str(">"))
+            
+            if user == id:
+                await ctx.send(f"{ctx.author.mention} You cannot sell items to yourself!")
+
+            else:
+                await self.check_bal(user)
+                await self.check_inv(user)
+    
+                item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", id))[0]
+                if item in sellable_items:
+                    if item_in_inv >= amount:
+                        bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
+                        user_bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", user))[0]
+                        if user_bal >= quotes:
+                            await ctx.send(f"<@{user}>\n{ctx.author.mention} has requested to sell you {amount} {item} for {quotes} Quotes. Do you accept? [yes/no]")
+
+                            def check(msg):
+                                return str(msg.author.id) == str(user) and msg.channel == ctx.channel
+    
+                            try: 
+                                msg = await self.bot.wait_for('message', timeout = 30, check=check)
+                                if (msg.content).lower() == 'yes':
+                                    user_item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", user))[0]
+                                    await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", user_item_in_inv + amount, user)
+                                    await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", user_bal - quotes, user)
+                                    await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
+                                    await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", bal + quotes, id)
+                                    await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been successfully processed.")
+
+                                elif (msg.content).lower() == 'no':
+                                    await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been cancelled.")
+
+                            except asyncio.TimeoutError:
+                                await ctx.send(f"{ctx.author.mention} Timeout, your transaction has been cancelled.")
+                        else:
+                            await ctx.send(f"{ctx.author.mention} The user specified does not have enough Quotes to buy your item/s.")
+                    else:
+                        await ctx.send(f"{ctx.author.mention} You do not have {amount} {item}! Please check your inventory.")
+                else:
+                    await ctx.send(f"{ctx.author.mention} The item you specified ({item}) is not sellable.")
+
+        else:
+            await ctx.send(f"{ctx.author.mention} Invalid user!")
+        
+
 def setup(bot):
     bot.add_cog(Currency(bot))
