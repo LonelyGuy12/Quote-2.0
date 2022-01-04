@@ -1283,7 +1283,7 @@ Dark Chocolate (5 Bars)
                     if item_in_inv >= amount:
                         bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
                         user_bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", user))[0]
-                        if quotes < 0:
+                        if quotes >= 0:
                             if user_bal >= quotes:
                                 await ctx.send(f"<@{user}>\n{ctx.author.mention} has requested to sell you {amount} {item} for {quotes} Quotes. Do you accept? [yes/no]")
 
