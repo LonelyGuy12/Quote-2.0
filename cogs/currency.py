@@ -958,7 +958,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
         leaderboard = leaderboard.replace("[", "").replace("<Record row=('", "").replace("'", "").replace(")>", "").replace("]", "")
         await ctx.send(leaderboard)
     
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 180, commands.BucketType.user)
     @commands.command(name = 'fish', help = 'Fish some virtual fish to earn Quotes!')
     async def fish(self, ctx):
         id = str(ctx.author.id)
@@ -974,7 +974,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
         else:
             await ctx.send(f"{ctx.author.mention} You fished up **nothing**. Better luck next time.")
     
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 180, commands.BucketType.user)
     @commands.command(name = 'hunt', help = 'Hunt some virtual creatures to earn Quotes!')
     async def hunt(self, ctx):
         id = str(ctx.author.id)
