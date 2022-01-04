@@ -1283,29 +1283,32 @@ Dark Chocolate (5 Bars)
                     if item_in_inv >= amount:
                         bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
                         user_bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", user))[0]
-                        if user_bal >= quotes:
-                            await ctx.send(f"<@{user}>\n{ctx.author.mention} has requested to sell you {amount} {item} for {quotes} Quotes. Do you accept? [yes/no]")
+                        if quotes < 0:
+                            if user_bal >= quotes:
+                                await ctx.send(f"<@{user}>\n{ctx.author.mention} has requested to sell you {amount} {item} for {quotes} Quotes. Do you accept? [yes/no]")
 
-                            def check(msg):
-                                return str(msg.author.id) == str(user) and msg.channel == ctx.channel
-    
-                            try: 
-                                msg = await self.bot.wait_for('message', timeout = 30, check=check)
-                                if (msg.content).lower() == 'yes':
-                                    user_item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", user))[0]
-                                    await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", user_item_in_inv + amount, user)
-                                    await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", user_bal - quotes, user)
-                                    await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
-                                    await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", bal + quotes, id)
-                                    await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been successfully processed.")
+                                def check(msg):
+                                    return str(msg.author.id) == str(user) and msg.channel == ctx.channel
 
-                                elif (msg.content).lower() == 'no':
-                                    await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been cancelled.")
+                                try: 
+                                    msg = await self.bot.wait_for('message', timeout = 30, check=check)
+                                    if (msg.content).lower() == 'yes':
+                                        user_item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", user))[0]
+                                        await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", user_item_in_inv + amount, user)
+                                        await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", user_bal - quotes, user)
+                                        await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
+                                        await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", bal + quotes, id)
+                                        await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been successfully processed.")
 
-                            except asyncio.TimeoutError:
-                                await ctx.send(f"{ctx.author.mention} Timeout, your transaction has been cancelled.")
+                                    elif (msg.content).lower() == 'no':
+                                        await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been cancelled.")
+
+                                except asyncio.TimeoutError:
+                                    await ctx.send(f"{ctx.author.mention} Timeout, your transaction has been cancelled.")
+                            else:
+                                await ctx.send(f"{ctx.author.mention} The user specified does not have enough Quotes to buy your item/s.")
                         else:
-                            await ctx.send(f"{ctx.author.mention} The user specified does not have enough Quotes to buy your item/s.")
+                            await ctx.send(f"{ctx.author.mention} You cannot sell for a negative amount of Quotes!")
                     else:
                         await ctx.send(f"{ctx.author.mention} You do not have {amount} {item}! Please check your inventory.")
                 else:
