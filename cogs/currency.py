@@ -299,7 +299,7 @@ class Currency(commands.Cog):
         bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
         bal = bal[0]
         jobs = ['a cleaner', 'a dentist', 'a GP doctor', 'a surgeon', 'a welder', 'a miner', 'a pro gamer', 'a streamer', 'a volunteer', 'a terrorist', "a McDonald's employee", 'a chef']
-        job = random.choices(jobs, weights = (50, 15, 12, 9, 30, 14, 37, 47, 35, 4, 49, 33))
+        job = random.choices(jobs, weights = (50, 15, 12, 9, 30, 14, 37, 47, 35, 2, 49, 33))
         job = job[0]
         wage = 0
         if job == 'a cleaner':
