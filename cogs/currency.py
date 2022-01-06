@@ -498,7 +498,6 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 ```
 """)
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command(name = 'buy', help = 'Buy virtual items from the virtual shop with your Quotes. NOTE: when buying items, please seperate words with underscores instead of spaces. (e.g. $buy tuna_roll 1)')
     async def buy(self, ctx, amount, *, item):
         try:
