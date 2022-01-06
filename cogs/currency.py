@@ -148,11 +148,25 @@ class Currency(commands.Cog):
             await self.bot.pg_con.execute("INSERT INTO inventory (userid) VALUES ($1)", id)
 
     @commands.command()
-    async def bal(self, ctx):
-        id = str(ctx.author.id)
-        await self.check_bal(id)
-        bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
-        await ctx.send(f'{ctx.author.mention} Your balance: {bal[0]} Quote/s')
+    async def bal(self, ctx, user = None):
+        if user == None:
+            id = str(ctx.author.id)
+            await self.check_bal(id)
+            bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+            await ctx.send(f'{ctx.author.mention} Your balance: {bal[0]} Quote/s')
+        else:
+            if user.startswith("<@") and user.endswith(">"):
+                if "<@!" in user:
+                    user = (user.removeprefix(str("<@!"))).removesuffix(str(">"))
+                else:
+                    user = (user.removeprefix(str("<@"))).removesuffix(str(">"))
+
+                await self.check_bal(user)
+                bal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", user)
+                await ctx.send(f"<@{user}>'s balance: {bal[0]} Quote/s")
+
+            else:
+                await ctx.send(f"{ctx.author.mention} Invalid user!")
 
     @commands.cooldown(3, 30, commands.BucketType.user)
     @commands.command()
@@ -486,11 +500,11 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command(name = 'buy', help = 'Buy virtual items from the virtual shop with your Quotes. NOTE: when buying items, please seperate words with underscores instead of spaces. (e.g. $buy tuna_roll 1)')
-    async def buy(self, ctx, item, amount):
+    async def buy(self, ctx, amount, *, item):
         try:
             amount = int(amount)
             id = str(ctx.author.id)
-            item = str(item.lower())    
+            item = (str(item.lower())).replace(' ', '_')
 
             await self.check_bal(id)
             await self.check_inv(id)
@@ -537,6 +551,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
                     current_bal = current_bal[0]
                     await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv + amount, id)
                     current_item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", id))[0]
+                    item = (str(item.lower())).replace('_', ' ')
                     await ctx.send(f"{ctx.author.mention} Thank you for purchasing {amount} {item}! You have spent a total of {total} Quotes. You now have {current_bal} Quotes and {current_item_in_inv} {item}.")
         
                 else:
@@ -991,8 +1006,8 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             await ctx.send(f"{ctx.author.mention} You found **nothing** to hunt. Better luck next time.")
 
     @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
-    async def sell(self, ctx, item, amount):
-        item = item.lower()
+    async def sell(self, ctx, amount, *, item):
+        item = (str(item.lower())).replace(' ', '_')
         amount = int(amount)
         id = str(ctx.author.id)
         bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
@@ -1045,12 +1060,17 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             item_in_inv = int((await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", id))[0])
 
             if item_in_inv >= amount:
-                total = int(amount * sell_price)
-                await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
-                await self.balChange(id, total)
-                current_bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
-                await ctx.send(f"{ctx.author.mention} You have sold {amount} {item}, earning {total} Quote/s. You now have {current_bal} Quote/s.")
+                if amount > 0:
+                    total = int(amount * sell_price)
+                    await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
+                    await self.balChange(id, total)
+                    current_bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
+                    item = (str(item.lower())).replace('_', ' ')
+                    await ctx.send(f"{ctx.author.mention} You have sold {amount} {item}, earning {total} Quote/s. You now have {current_bal} Quote/s.")
+                else:
+                    await ctx.send(f"{ctx.author.mention} You cannot sell less than 1 item!")
             else:
+                item = (str(item.lower())).replace('_', ' ')
                 await ctx.send(f"{ctx.author.mention} You do not have {amount} {item} in your inventory.")
         else:
             await ctx.send(f'{ctx.author.mention} The item that you have specified is not sellable or invalid, please check the shop using $shop [category] for more info.')
@@ -1202,7 +1222,7 @@ Dark Chocolate (5 Bars)
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(name = 'p_sell', help = 'Sell your items to other users for Quotes.')
-    async def p_sell(self, ctx, user, item, amount, quotes):
+    async def p_sell(self, ctx, user, quotes, amount, *, item):
         try:
             amount = int(amount)
         except ValueError:
@@ -1212,8 +1232,8 @@ Dark Chocolate (5 Bars)
             quotes = int(quotes)
         except ValueError:
             await ctx.send("Amount of Quotes needs to be an integer!")
-        
-        item = item.lower()
+
+        item = (str(item.lower())).replace(' ', '_')
         id = str(ctx.author.id)
         await self.check_bal(id)
         await self.check_inv(id)
@@ -1283,8 +1303,9 @@ Dark Chocolate (5 Bars)
                     if item_in_inv >= amount:
                         bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id))[0]
                         user_bal = (await self.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", user))[0]
-                        if quotes >= 0:
+                        if quotes >= 0 and amount > 0:
                             if user_bal >= quotes:
+                                item = (str(item.lower())).replace('_', ' ')
                                 await ctx.send(f"<@{user}>\n{ctx.author.mention} has requested to sell you {amount} {item} for {quotes} Quotes. Do you accept? [yes/no]")
 
                                 def check(msg):
@@ -1293,6 +1314,7 @@ Dark Chocolate (5 Bars)
                                 try: 
                                     msg = await self.bot.wait_for('message', timeout = 30, check=check)
                                     if (msg.content).lower() == 'yes':
+                                        item = (str(item.lower())).replace(' ', '_')
                                         user_item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", user))[0]
                                         await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", user_item_in_inv + amount, user)
                                         await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", user_bal - quotes, user)
@@ -1308,15 +1330,29 @@ Dark Chocolate (5 Bars)
                             else:
                                 await ctx.send(f"{ctx.author.mention} The user specified does not have enough Quotes to buy your item/s.")
                         else:
-                            await ctx.send(f"{ctx.author.mention} You cannot sell for a negative amount of Quotes!")
+                            await ctx.send(f"{ctx.author.mention} You cannot sell for a negative amount of Quotes nor sell less than 1 item!")
                     else:
+                        item = (str(item.lower())).replace('_', ' ')
                         await ctx.send(f"{ctx.author.mention} You do not have {amount} {item}! Please check your inventory.")
                 else:
+                    item = (str(item.lower())).replace('_', ' ')
                     await ctx.send(f"{ctx.author.mention} The item you specified ({item}) is not sellable.")
 
         else:
             await ctx.send(f"{ctx.author.mention} Invalid user!")
-        
+    
+    @commands.command(name = 'use', help = 'Use/eat an item in your inventory.')
+    async def use(self, ctx, *, item):
+        id = str(ctx.author.id)
+        await self.check_bal(id)
+        await self.check_inv(id)
+        item = (str(item.lower())).replace(' ', '_')
 
+        useable_items = {
+            'milk_chocolate',
+            'dark_chocolate',
+            ''
+        }
+        
 def setup(bot):
     bot.add_cog(Currency(bot))
