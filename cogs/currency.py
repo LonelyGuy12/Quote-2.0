@@ -250,13 +250,14 @@ class Currency(commands.Cog):
         else:
             await ctx.send(f'{ctx.author.mention} Invalid input! Please choose from: paper, scissors and rock.')
     
-    #@commands.cooldown(1, 15, commands.BucketType.user)
-    @commands.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
-    async def quiz(self, ctx, category):
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    @commands.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths, medical.')
+    async def quiz(self, ctx, *, category):
         id = str(ctx.author.id)
         await self.check_bal(id)
+        category = category.lower()
 
-        if category == "quick_maths":
+        if category == "quick maths":
             operator = random.randint(1, 3)
             if operator == 1:
                 first = random.randint(0, 250)
@@ -294,7 +295,7 @@ class Currency(commands.Cog):
             except ValueError:
                 await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')
 
-        if category == "medical":
+        elif category == "medical":
             questions = medical_quizzes.questions
             question = random.choice(list(questions.keys()))
             answer = questions[question]
@@ -312,6 +313,9 @@ class Currency(commands.Cog):
                 await ctx.send('Correct {.author.mention}!\nYou now have {} Quote/s.'.format(msg, currentBal))        
             else:
                 await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
+
+        else:
+            await ctx.send(f"{ctx.author.mention} This category does not exist. The categories are: quick maths and medical. $quiz [category]")
 
     @commands.cooldown(1, 3600, commands.BucketType.user)
     @commands.command(name = "work", help = "Earn Quotes by working.")
