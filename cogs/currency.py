@@ -1,4 +1,5 @@
 import medical_quizzes
+import maths_adv_quizzes
 
 import random
 import math
@@ -277,7 +278,7 @@ class Currency(commands.Cog):
                 question = str(first) + " * " + str(second)
                 answer = int(first) * int(second)
 
-            await ctx.send(question)
+            await ctx.send(f'{ctx.author.mention}{question}')
                     
             def check(msg):
                 return msg.channel == ctx.channel and msg.author == ctx.author
@@ -300,7 +301,7 @@ class Currency(commands.Cog):
             question = random.choice(list(questions.keys()))
             answer = questions[question]
 
-            await ctx.send(question)
+            await ctx.send(f'{ctx.author.mention}{question}')
 
             def check(msg):
                 return msg.channel == ctx.channel and msg.author == ctx.author
@@ -314,6 +315,26 @@ class Currency(commands.Cog):
             else:
                 await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
 
+        elif category == 'maths adv' or category == 'maths advanced':
+            questions = maths_adv_quizzes.questions
+            question = random.choice(list(questions.keys()))
+            answer = questions[question]
+
+            await ctx.send("[NOTE]: When the question has multiple parts/sections, use commas with a space after it to separate answers (e.g. '1, 2, 3'). Units and variables are not required unless the question is asking for an equation (e.g. 't = 2s' can be written as just '2'). Use mathematical symbols where applicable to answer questions (e.g. π instead of pi, √ instead of sqrt().) Red lines crossing out a part means that no answer is required for that part. Questions asking for 'dimensions' can be answered with an astrix (e.g. 3*4 meaning 3 by 4). ")
+            await ctx.send(ctx.author.mention)
+            await ctx.send(file = discord.File(f'{question}'))
+
+            def check(msg):
+                return msg.channel == ctx.channel and msg.author == ctx.author
+            
+            msg = await self.bot.wait_for('message', check=check)
+            if (msg.content) == answer:
+                await self.balChange(id, 4)
+                currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+                currentBal = currentBal[0]
+                await ctx.send('Correct {.author.mention}!\nYou now have {} Quote/s.'.format(msg, currentBal))        
+            else:
+                await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
         else:
             await ctx.send(f"{ctx.author.mention} This category does not exist. The categories are: quick maths and medical. $quiz [category]")
 
@@ -525,7 +546,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
 """)
 
     @commands.command(name = 'buy', help = 'Buy virtual items from the virtual shop with your Quotes. NOTE: when buying items, please seperate words with underscores instead of spaces. (e.g. $buy tuna_roll 1)')
-    async def buy(self, ctx, amount, *, item):
+    async def buy(self, ctx, amount = 1, *, item):
         try:
             amount = int(amount)
             id = str(ctx.author.id)
@@ -1031,7 +1052,7 @@ Medusa - Buy: N/A, Sell: 1000 Quotes
             await ctx.send(f"{ctx.author.mention} You found **nothing** to hunt. Better luck next time.")
 
     @commands.command(name = 'sell', help = 'Sell some items that you have obtained from fishing, events, rewards, etc.')
-    async def sell(self, ctx, amount, *, item):
+    async def sell(self, ctx, amount = 1, *, item):
         item = (str(item.lower())).replace(' ', '_')
         amount = int(amount)
         id = str(ctx.author.id)
@@ -1247,7 +1268,7 @@ Dark Chocolate (5 Bars)
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(name = 'p_sell', help = 'Sell your items to other users for Quotes.')
-    async def p_sell(self, ctx, user, quotes, amount, *, item):
+    async def p_sell(self, ctx, user, quotes, amount = 1, *, item):
         try:
             amount = int(amount)
         except ValueError:
