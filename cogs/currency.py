@@ -1383,6 +1383,6 @@ Dark Chocolate (5 Bars)
             'dark_chocolate',
             ''
         }
-        
+
 def setup(bot):
     bot.add_cog(Currency(bot))

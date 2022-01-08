@@ -98,7 +98,7 @@ questions = {
     'Which part of the human body does multiple sclerosis affect?\n\nA)reproductive system\nB)nervous system\nC)respiratory system\nD)digestive system': 'B',
     'What is the name of the disorder characterized by the patchy loss of melanin pigment from the skin?': 'vitiligo',
     "If you're stranded in the Arctic, why should you avoid eating polar bear liver?\n\nA)beriberi\nB)pernicious anemia\nC)hypervitaminosis A\nD)scurvy": 'C',
-    'What determines the blood group in a person?': 'red blood cells',
+    'What determines the blood group in a person?': 'rhesus and AB antigens',
     'Who was the founder of modern psychosurgery?\n\nA)Antonio Egas Moniz\nB)William James\nC)Alfred Adler\nD)Florence Rena Sabin': 'A',
     'Which of these scientists helped in the development of azidothymidine (AZT), the first drug used in the treatment of AIDS?\n\nA)Barbara McClintock\nB)Gertrude B. Elion\nC)Maria Goeppert Mayer\nD)Anthony Fauci': 'B',
     'Which of these congenital disorders is characterized by an extra chromosome?\n\nA)Down syndrome\nB)Turner syndrome\nC)trisomy 13\nD)tetralogy of Fallot': 'A',
