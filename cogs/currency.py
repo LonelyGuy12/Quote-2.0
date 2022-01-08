@@ -1,3 +1,5 @@
+import medical_quizzes
+
 import random
 import math
 import time
@@ -248,11 +250,12 @@ class Currency(commands.Cog):
         else:
             await ctx.send(f'{ctx.author.mention} Invalid input! Please choose from: paper, scissors and rock.')
     
-    @commands.cooldown(1, 15, commands.BucketType.user)
+    #@commands.cooldown(1, 15, commands.BucketType.user)
     @commands.command(name = 'quiz', help = 'Test your knowledge in multiple quiz categories! At the moment, the categories are: quick maths.')
     async def quiz(self, ctx, category):
         id = str(ctx.author.id)
         await self.check_bal(id)
+
         if category == "quick_maths":
             operator = random.randint(1, 3)
             if operator == 1:
@@ -282,7 +285,7 @@ class Currency(commands.Cog):
             try:
                 if isinstance(int(msg.content), int) == True:  
                     if int(msg.content) == answer:
-                        await self.balChange(id, 4)
+                        await self.balChange(id, 2)
                         currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                         currentBal = currentBal[0]
                         await ctx.send('Correct {.author.mention}!\nYou now have {} Quote/s.'.format(msg, currentBal))        
@@ -290,6 +293,25 @@ class Currency(commands.Cog):
                         await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
             except ValueError:
                 await ctx.send('Invalid response {.author.mention}! The correct answer was '.format(msg) + str(answer) + '.')
+
+        if category == "medical":
+            questions = medical_quizzes.questions
+            question = random.choice(list(questions.keys()))
+            answer = questions[question]
+
+            await ctx.send(question)
+
+            def check(msg):
+                return msg.channel == ctx.channel and msg.author == ctx.author
+            
+            msg = await self.bot.wait_for('message', check=check)
+            if (msg.content.lower()) == answer.lower():
+                await self.balChange(id, 4)
+                currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
+                currentBal = currentBal[0]
+                await ctx.send('Correct {.author.mention}!\nYou now have {} Quote/s.'.format(msg, currentBal))        
+            else:
+                await ctx.send('Incorrect {.author.mention}... The correct answer was '.format(msg) + str(answer) + '.')
 
     @commands.cooldown(1, 3600, commands.BucketType.user)
     @commands.command(name = "work", help = "Earn Quotes by working.")
@@ -1311,21 +1333,26 @@ Dark Chocolate (5 Bars)
                                     return str(msg.author.id) == str(user) and msg.channel == ctx.channel
 
                                 try: 
-                                    msg = await self.bot.wait_for('message', timeout = 30, check=check)
-                                    if (msg.content).lower() == 'yes':
-                                        item = (str(item.lower())).replace(' ', '_')
-                                        user_item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", user))[0]
-                                        await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", user_item_in_inv + amount, user)
-                                        await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", user_bal - quotes, user)
-                                        await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
-                                        await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", bal + quotes, id)
-                                        await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been successfully processed.")
+                                    active = True
+                                    while active == True:
+                                        msg = await self.bot.wait_for('message', timeout = 30, check=check)
+                                        if (msg.content).lower() == 'yes':
+                                            item = (str(item.lower())).replace(' ', '_')
+                                            user_item_in_inv = (await self.bot.pg_con.fetchrow(f"SELECT {item} FROM inventory WHERE userid = $1", user))[0]
+                                            await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", user_item_in_inv + amount, user)
+                                            await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", user_bal - quotes, user)
+                                            await self.bot.pg_con.execute(f"UPDATE inventory SET {item} = $1 WHERE userid = $2", item_in_inv - amount, id)
+                                            await self.bot.pg_con.execute("UPDATE currency SET quotes = $1 WHERE userid = $2", bal + quotes, id)
+                                            await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been successfully processed.")
+                                            active = False
 
-                                    elif (msg.content).lower() == 'no':
-                                        await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been cancelled.")
+                                        elif (msg.content).lower() == 'no':
+                                            await ctx.send(f"{ctx.author.mention} <@{user}> Your transaction has been cancelled.")
+                                            active = False
 
                                 except asyncio.TimeoutError:
                                     await ctx.send(f"{ctx.author.mention} Timeout, your transaction has been cancelled.")
+                                    active = False
                             else:
                                 await ctx.send(f"{ctx.author.mention} The user specified does not have enough Quotes to buy your item/s.")
                         else:
