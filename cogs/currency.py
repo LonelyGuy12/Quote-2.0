@@ -328,7 +328,7 @@ class Currency(commands.Cog):
             await ctx.send(ctx.author.mention)
             await ctx.send(dir)
             await ctx.send(dir_images)
-            await ctx.send(file = discord.File(f'/images/{question}'))
+            await ctx.send(file = discord.File(f'images/{question}'))
 
             def check(msg):
                 return msg.channel == ctx.channel and msg.author == ctx.author
