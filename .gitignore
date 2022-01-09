@@ -2,3 +2,4 @@
 copypaste.txt
 __pycache__/
 
+*.pyc
