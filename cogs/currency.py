@@ -327,6 +327,7 @@ class Currency(commands.Cog):
             await ctx.send("[NOTE]: When the question has multiple parts/sections, use commas with a space after it to separate answers (e.g. '1, 2, 3'). Units and variables are not required unless the question is asking for an equation (e.g. 't = 2s' can be written as just '2'). Use mathematical symbols where applicable to answer questions (e.g. π instead of pi, √ instead of sqrt().) Red lines crossing out a part means that no answer is required for that part. Questions asking for 'dimensions' can be answered with an astrix (e.g. 3*4 meaning 3 by 4). ")
             await ctx.send(ctx.author.mention)
             await ctx.send(dir)
+            await ctx.send(dir_images)
             await ctx.send(file = discord.File(f'/images/{question}'))
 
             def check(msg):
