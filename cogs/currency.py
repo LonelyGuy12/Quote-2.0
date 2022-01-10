@@ -320,8 +320,9 @@ class Currency(commands.Cog):
             questions = maths_adv_quizzes.questions
             question = random.choice(list(questions.keys()))
             answer = questions[question]
+            answer = answer.replace(" ", "")
 
-            await ctx.send("[NOTE]: When the question has multiple parts/sections, use commas with a space after it to separate answers (e.g. '1, 2, 3'). Units and variables are not required unless the question is asking for an equation (e.g. 't = 2s' can be written as just '2'). Use mathematical symbols where applicable to answer questions (e.g. π instead of pi, √ instead of sqrt().) Red lines crossing out a part means that no answer is required for that part. Questions asking for 'dimensions' can be answered with an astrix (e.g. 3*4 meaning 3 by 4). ")
+            await ctx.send("[NOTE]: When the question has multiple parts/sections, use commas with a space after it to separate answers (e.g. '1, 2, 3'). Units and variables (abbreviated: e.g. centimetre -> cm) are required (e.g. 't = 2s'). Use mathematical symbols where applicable to answer questions (e.g. π instead of pi, √ instead of sqrt()). Use standard mathematical conventions for other inputs, e.g 'to the power of' is expressed as ^[power]. Red lines crossing out a part means that no answer is required for that part. Questions asking for 'dimensions' can be answered with an astrix, numbers need to be in ascending order (e.g. 3*4 meaning 3 by 4). ")
             await ctx.send(ctx.author.mention)
             await ctx.send(file = discord.File(f'images/{question}'))
 
@@ -329,7 +330,8 @@ class Currency(commands.Cog):
                 return msg.channel == ctx.channel and msg.author == ctx.author
             
             msg = await self.bot.wait_for('message', check=check)
-            if (msg.content) == answer:
+            user_answer = msg.content.replace(" ", "")
+            if user_answer == answer:
                 await self.balChange(id, 4)
                 currentBal = await ctx.bot.pg_con.fetchrow("SELECT quotes FROM currency WHERE userid = $1", id)
                 currentBal = currentBal[0]
